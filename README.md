@@ -5,26 +5,32 @@ AllinConnect est une plateforme web permettant aux clients de trouver des artisa
 ## Fonctionnalités
 
 - **Inscription et Connexion** : Les utilisateurs peuvent s'inscrire en tant que Client ou Professionnel.
-- **Profil Utilisateur** : Gestion des informations personnelles (nom, prénom, adresse, ville, date de naissance).
-- **Recherche de Professionnels** : Les clients peuvent rechercher des professionnels par ville.
-- **Système d'Abonnement** : Les utilisateurs disposent d'un type d'abonnement (FREE, BASIC, PREMIUM).
+- **Profil Utilisateur** : Gestion des informations personnelles (nom, prénom, adresse, ville, date de naissance) et changement de mot de passe.
+- **Recherche de Professionnels** : Recherche par ville et par catégorie professionnelle.
+- **Système d'Abonnement** : Les utilisateurs disposent d'un type d'abonnement (FREE, BASIC, PREMIUM). Les professionnels peuvent souscrire à des plans payants.
+- **Gestion des Offres** : Les professionnels peuvent créer, mettre à jour, archiver et supprimer des offres de services.
+- **Évaluations et Commentaires** : Les clients peuvent évaluer les professionnels avec un score et un commentaire.
+- **Favoris** : Les utilisateurs peuvent ajouter des professionnels à leur liste de favoris.
 - **Indicateur de Connexion** : Suivi de la première connexion pour une expérience personnalisée.
-- **Professionnels** : Support des champs spécifiques comme la profession pour les comptes professionnels.
 
 ## Technologies Utilisées
 
 - **Backend** : Spring Boot 4.0.1
-- **Langage** : Java 17
-- **Base de données** : MySQL 8.x
+- **Langage** : Java 21
+- **Base de données** : 
+  - **Production** : MySQL 8.x
+  - **Tests** : H2 (Base de données en mémoire)
 - **Sécurité** : Spring Security 6 & JWT (JSON Web Token)
 - **Persistence** : Spring Data JPA / Hibernate
+- **Outils** : Lombok
 
 ## Configuration et Installation
 
 1. **Base de données** :
-   - Assurez-vous d'avoir un serveur MySQL en cours d'exécution.
+   - Assurez-vous d'avoir un serveur MySQL en cours d'exécution pour le développement.
    - Créez une base de données nommée `allinconnect`.
    - Modifiez `src/main/resources/application.properties` avec vos identifiants si nécessaire.
+   - *Note : Les tests utilisent automatiquement une base H2 en mémoire.*
 
 2. **Compilation** :
    ```bash
@@ -39,19 +45,42 @@ AllinConnect est une plateforme web permettant aux clients de trouver des artisa
 ## API Endpoints
 
 ### Authentification
-- `POST /api/v1/auth/register` : Inscription d'un nouvel utilisateur (Client ou Professionnel).
+- `POST /api/v1/auth/register` : Inscription d'un nouvel utilisateur.
 - `POST /api/v1/auth/authenticate` : Connexion et récupération du token JWT.
+- `POST /api/v1/auth/forgot-password` : Demande de réinitialisation de mot de passe.
+- `POST /api/v1/auth/reset-password` : Réinitialisation du mot de passe avec jeton.
 
 ### Utilisateurs
-- `GET /api/v1/users/professionals?city={city}` : Rechercher des professionnels dans une ville spécifique.
+- `GET /api/v1/users/me` : Récupérer mon profil.
+- `GET /api/v1/users/professionals/search` : Rechercher des professionnels par ville et catégorie.
+- `POST /api/v1/users/change-password` : Changer son mot de passe.
+- `POST /api/v1/users/favorites/{id}` : Ajouter un professionnel aux favoris.
+- `GET /api/v1/users/favorites` : Lister mes favoris.
+
+### Offres
+- `GET /api/v1/offers` : Lister toutes les offres (avec filtres optionnels).
+- `POST /api/v1/offers` : Créer une nouvelle offre (Professionnel).
+- `GET /api/v1/offers/my-offers` : Lister mes propres offres.
+- `PUT /api/v1/offers/{id}` : Modifier une offre.
+- `DELETE /api/v1/offers/{id}` : Supprimer une offre.
+
+### Évaluations
+- `POST /api/v1/ratings` : Laisser une évaluation.
+- `GET /api/v1/ratings/user/{userId}` : Voir les évaluations d'un utilisateur.
+- `GET /api/v1/ratings/user/{userId}/average` : Voir la note moyenne d'un utilisateur.
+
+### Abonnements
+- `GET /api/v1/subscriptions/plans` : Lister les plans d'abonnement disponibles.
+- `POST /api/v1/subscriptions/subscribe/{planId}` : Souscrire à un plan.
+- `GET /api/v1/subscriptions/my-payments` : Voir mon historique de paiements.
 
 ## Structure du Projet
 
-- `com.allinconnect.allinconnectback2.controller` : Contrôleurs REST.
-- `com.allinconnect.allinconnectback2.service` : Logique métier.
-- `com.allinconnect.allinconnectback2.entity` : Entités JPA.
-- `com.allinconnect.allinconnectback2.dto` : Objets de transfert de données pour les requêtes/réponses.
-- `com.allinconnect.allinconnectback2.repository` : Interfaces Spring Data JPA.
-- `com.allinconnect.allinconnectback2.security` : Configuration de la sécurité JWT.
-- `com.allinconnect.allinconnectback2.model` : Énumérations et modèles communs (UserType, SubscriptionType).
+- `com.allinconnect.controller` : Contrôleurs REST.
+- `com.allinconnect.service` : Logique métier.
+- `com.allinconnect.entity` : Entités JPA.
+- `com.allinconnect.dto` : Objets de transfert de données pour les requêtes/réponses.
+- `com.allinconnect.repository` : Interfaces Spring Data JPA.
+- `com.allinconnect.security` : Configuration de la sécurité JWT.
+- `com.allinconnect.model` : Énumérations et modèles communs (UserType, SubscriptionType).
 # allinconnect-back
