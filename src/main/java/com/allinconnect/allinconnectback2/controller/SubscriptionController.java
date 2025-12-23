@@ -4,6 +4,7 @@ import com.allinconnect.allinconnectback2.entity.Payment;
 import com.allinconnect.allinconnectback2.entity.SubscriptionPlan;
 import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.service.SubscriptionService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/subscriptions")
+@Slf4j
 public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
@@ -22,21 +24,25 @@ public class SubscriptionController {
 
     @GetMapping("/plans")
     public ResponseEntity<List<SubscriptionPlan>> getAllPlans() {
+        log.debug("Getting all subscription plans");
         return ResponseEntity.ok(subscriptionService.getAllPlans());
     }
 
     @PostMapping("/plans")
     public ResponseEntity<SubscriptionPlan> createPlan(@RequestBody SubscriptionPlan plan) {
+        log.debug("Creating new subscription plan: {}", plan.getTitle());
         return ResponseEntity.ok(subscriptionService.createPlan(plan));
     }
 
     @PostMapping("/subscribe/{planId}")
     public ResponseEntity<User> subscribe(@AuthenticationPrincipal User user, @PathVariable Long planId) {
+        log.debug("User {} subscribing to plan {}", user.getEmail(), planId);
         return ResponseEntity.ok(subscriptionService.subscribe(user, planId));
     }
 
     @GetMapping("/my-payments")
     public ResponseEntity<List<Payment>> getMyPayments(@AuthenticationPrincipal User user) {
+        log.debug("Getting payments for user: {}", user.getEmail());
         return ResponseEntity.ok(subscriptionService.getUserPayments(user));
     }
 }

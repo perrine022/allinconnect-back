@@ -6,12 +6,14 @@ import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.repository.PaymentRepository;
 import com.allinconnect.allinconnectback2.repository.SubscriptionPlanRepository;
 import com.allinconnect.allinconnectback2.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Slf4j
 public class SubscriptionService {
 
     private final SubscriptionPlanRepository subscriptionPlanRepository;
@@ -25,14 +27,17 @@ public class SubscriptionService {
     }
 
     public List<SubscriptionPlan> getAllPlans() {
+        log.debug("Service: Getting all subscription plans");
         return subscriptionPlanRepository.findAll();
     }
 
     public SubscriptionPlan createPlan(SubscriptionPlan plan) {
+        log.debug("Service: Creating subscription plan {}", plan.getTitle());
         return subscriptionPlanRepository.save(plan);
     }
 
     public User subscribe(User user, Long planId) {
+        log.debug("Service: Subscribing user {} to plan {}", user.getEmail(), planId);
         SubscriptionPlan plan = subscriptionPlanRepository.findById(planId)
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
         
@@ -43,10 +48,12 @@ public class SubscriptionService {
         
         // Remise de 50% pour le premier mois si l'utilisateur a un parrain et n'a pas encore de paiements
         if (user.getReferrer() != null && paymentRepository.findByUser(user).isEmpty()) {
+            log.debug("Applying referral discount for user {}", user.getEmail());
             amount = amount * 0.5;
         }
         
         // Simuler un paiement lors de la souscription
+        log.debug("Recording payment of {} for user {}", amount, user.getEmail());
         Payment payment = new Payment();
         payment.setAmount(amount);
         payment.setPaymentDate(LocalDateTime.now());
@@ -57,6 +64,7 @@ public class SubscriptionService {
     }
 
     public List<Payment> getUserPayments(User user) {
+        log.debug("Service: Getting payments for user {}", user.getEmail());
         return paymentRepository.findByUser(user);
     }
 }

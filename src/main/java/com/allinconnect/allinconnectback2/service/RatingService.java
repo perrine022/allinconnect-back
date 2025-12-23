@@ -4,11 +4,13 @@ import com.allinconnect.allinconnectback2.entity.Rating;
 import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.repository.RatingRepository;
 import com.allinconnect.allinconnectback2.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class RatingService {
 
     private final RatingRepository ratingRepository;
@@ -20,7 +22,9 @@ public class RatingService {
     }
 
     public Rating rateUser(User rater, Long ratedId, Integer score, String comment) {
+        log.debug("Service: User {} rating user {}", rater.getEmail(), ratedId);
         if (rater.getId().equals(ratedId)) {
+            log.debug("User {} tried to rate themselves", rater.getEmail());
             throw new RuntimeException("You cannot rate yourself");
         }
 
@@ -28,6 +32,7 @@ public class RatingService {
                 .orElseThrow(() -> new RuntimeException("User to be rated not found"));
 
         if (ratingRepository.findByRaterAndRated(rater, rated).isPresent()) {
+            log.debug("User {} has already rated user {}", rater.getEmail(), ratedId);
             throw new RuntimeException("You have already rated this user");
         }
 
@@ -42,12 +47,14 @@ public class RatingService {
     }
 
     public List<Rating> getRatingsForUser(Long userId) {
+        log.debug("Service: Getting ratings for user {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return ratingRepository.findByRated(user);
     }
 
     public Double getAverageRating(Long userId) {
+        log.debug("Service: Calculating average rating for user {}", userId);
         List<Rating> ratings = getRatingsForUser(userId);
         if (ratings.isEmpty()) {
             return 0.0;

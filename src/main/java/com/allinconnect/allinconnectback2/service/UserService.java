@@ -5,12 +5,14 @@ import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.model.ProfessionCategory;
 import com.allinconnect.allinconnectback2.model.UserType;
 import com.allinconnect.allinconnectback2.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -22,7 +24,9 @@ public class UserService {
     }
 
     public void changePassword(User user, ChangePasswordRequest request) {
+        log.debug("Service: Changing password for user {}", user.getEmail());
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            log.debug("Invalid old password for user {}", user.getEmail());
             throw new RuntimeException("Invalid old password");
         }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -30,10 +34,12 @@ public class UserService {
     }
 
     public List<User> findProfessionalsByCity(String city) {
+        log.debug("Service: Finding professionals in city {}", city);
         return userRepository.findByUserTypeAndCity(UserType.PROFESSIONAL, city);
     }
 
     public List<User> searchProfessionals(String city, ProfessionCategory category) {
+        log.debug("Service: Searching professionals with city: {} and category: {}", city, category);
         if (city != null && category != null) {
             return userRepository.findByUserTypeAndCityAndCategory(UserType.PROFESSIONAL, city, category);
         } else if (city != null) {
@@ -48,10 +54,12 @@ public class UserService {
     }
 
     public void addFavorite(User user, Long favoriteId) {
+        log.debug("Service: Adding favorite {} to user {}", favoriteId, user.getEmail());
         User favorite = userRepository.findById(favoriteId)
                 .orElseThrow(() -> new RuntimeException("Favorite user not found"));
         
         if (user.getFavorites().contains(favorite)) {
+            log.debug("User {} already has {} in favorites", user.getEmail(), favoriteId);
             throw new RuntimeException("User already in favorites");
         }
         
@@ -60,6 +68,7 @@ public class UserService {
     }
 
     public void removeFavorite(User user, Long favoriteId) {
+        log.debug("Service: Removing favorite {} from user {}", favoriteId, user.getEmail());
         User favorite = userRepository.findById(favoriteId)
                 .orElseThrow(() -> new RuntimeException("Favorite user not found"));
         
@@ -68,6 +77,7 @@ public class UserService {
     }
 
     public List<User> getFavorites(User user) {
+        log.debug("Service: Getting favorites for user {}", user.getEmail());
         return user.getFavorites();
     }
 }

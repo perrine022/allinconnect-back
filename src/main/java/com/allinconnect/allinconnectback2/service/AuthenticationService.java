@@ -4,6 +4,7 @@ import com.allinconnect.allinconnectback2.dto.*;
 import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.repository.UserRepository;
 import com.allinconnect.allinconnectback2.security.JwtService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +15,7 @@ import java.util.Random;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class AuthenticationService {
 
     private final UserRepository userRepository;
@@ -34,6 +36,7 @@ public class AuthenticationService {
     }
 
     public AuthResponse register(UserRegistrationRequest request) {
+        log.debug("Service: Registering user {}", request.getEmail());
         String personalReferralCode = generateReferralCode(request.getLastName());
         
         var userBuilder = User.builder()
@@ -54,6 +57,7 @@ public class AuthenticationService {
         user.setReferralCode(personalReferralCode);
 
         if (request.getReferralCode() != null && !request.getReferralCode().isEmpty()) {
+            log.debug("Applying referral code: {}", request.getReferralCode());
             userRepository.findByReferralCode(request.getReferralCode()).ifPresent(user::setReferrer);
         }
         
@@ -65,6 +69,7 @@ public class AuthenticationService {
     }
 
     private String generateReferralCode(String lastName) {
+        log.debug("Generating referral code for {}", lastName);
         StringBuilder code = new StringBuilder(lastName.toLowerCase());
         Random random = new Random();
         for (int i = 0; i < 10; i++) {
@@ -74,6 +79,7 @@ public class AuthenticationService {
     }
 
     public AuthResponse authenticate(LoginRequest request) {
+        log.debug("Service: Authenticating user {}", request.getEmail());
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -84,6 +90,7 @@ public class AuthenticationService {
                 .orElseThrow();
         
         if (!user.isHasConnectedBefore()) {
+            log.debug("First connection for user {}, marking as connected", user.getEmail());
             user.setHasConnectedBefore(true);
             userRepository.save(user);
         }
@@ -95,6 +102,7 @@ public class AuthenticationService {
     }
 
     public String forgotPassword(ForgotPasswordRequest request) {
+        log.debug("Service: Processing forgot password for {}", request.getEmail());
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -108,10 +116,12 @@ public class AuthenticationService {
     }
 
     public void resetPassword(ResetPasswordRequest request) {
+        log.debug("Service: Resetting password with token");
         var user = userRepository.findByResetToken(request.getToken())
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
 
         if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            log.debug("Token expired for user {}", user.getEmail());
             throw new RuntimeException("Token expired");
         }
 

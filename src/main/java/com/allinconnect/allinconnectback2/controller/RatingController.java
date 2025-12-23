@@ -4,6 +4,7 @@ import com.allinconnect.allinconnectback2.dto.RatingRequest;
 import com.allinconnect.allinconnectback2.entity.Rating;
 import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.service.RatingService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/ratings")
+@Slf4j
 public class RatingController {
 
     private final RatingService ratingService;
@@ -24,6 +26,7 @@ public class RatingController {
     public ResponseEntity<Rating> rateUser(
             @AuthenticationPrincipal User rater,
             @RequestBody RatingRequest request) {
+        log.debug("User {} rating user {}", rater.getEmail(), request.getRatedId());
         return ResponseEntity.ok(ratingService.rateUser(
                 rater,
                 request.getRatedId(),
@@ -33,11 +36,13 @@ public class RatingController {
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Rating>> getRatingsForUser(@PathVariable Long userId) {
+        log.debug("Getting ratings for user: {}", userId);
         return ResponseEntity.ok(ratingService.getRatingsForUser(userId));
     }
 
     @GetMapping("/user/{userId}/average")
     public ResponseEntity<Double> getAverageRating(@PathVariable Long userId) {
+        log.debug("Getting average rating for user: {}", userId);
         return ResponseEntity.ok(ratingService.getAverageRating(userId));
     }
 }
