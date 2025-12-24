@@ -18,10 +18,12 @@ public class Rating {
 
     @ManyToOne
     @JoinColumn(name = "rater_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"password", "email", "address", "city", "birthDate", "referrals", "favorites", "card", "payments", "authorities", "username", "subscriptionPlan", "savings"})
     private User rater;
 
     @ManyToOne
     @JoinColumn(name = "rated_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"password", "email", "address", "city", "birthDate", "referrals", "favorites", "card", "payments", "authorities", "username", "subscriptionPlan", "savings"})
     private User rated;
 
     private LocalDateTime createdAt;

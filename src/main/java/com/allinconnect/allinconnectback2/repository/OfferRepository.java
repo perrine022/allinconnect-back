@@ -20,12 +20,15 @@ public interface OfferRepository extends JpaRepository<Offer, Long> {
            "(:category IS NULL OR o.professional.category = :category) AND " +
            "(:professionalId IS NULL OR o.professional.id = :professionalId) AND " +
            "(:type IS NULL OR o.type = :type) AND " +
-           "(o.status = :status)")
+           "(o.status = :status) AND " +
+           "(:onlyActive = false OR (o.startDate <= :now AND o.endDate >= :now))")
     List<Offer> findByFilters(
             @Param("city") String city,
             @Param("category") ProfessionCategory category,
             @Param("professionalId") Long professionalId,
             @Param("type") OfferType type,
-            @Param("status") OfferStatus status
+            @Param("status") OfferStatus status,
+            @Param("onlyActive") boolean onlyActive,
+            @Param("now") java.time.LocalDateTime now
     );
 }

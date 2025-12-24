@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -55,9 +56,15 @@ public class OfferService {
     }
 
     @Transactional(readOnly = true)
+    public List<Offer> getActiveOffers() {
+        log.debug("Service: Getting all active offers");
+        return offerRepository.findByFilters(null, null, null, null, OfferStatus.ACTIVE, true, LocalDateTime.now());
+    }
+
+    @Transactional(readOnly = true)
     public List<Offer> getOffersByFilters(String city, ProfessionCategory category, Long professionalId, OfferType type) {
         log.debug("Service: Getting offers with filters - city: {}, category: {}, professionalId: {}, type: {}", city, category, professionalId, type);
-        return offerRepository.findByFilters(city, category, professionalId, type, OfferStatus.ACTIVE);
+        return offerRepository.findByFilters(city, category, professionalId, type, OfferStatus.ACTIVE, false, LocalDateTime.now());
     }
 
     public List<Offer> getOffersByProfessional(User professional) {
@@ -66,9 +73,16 @@ public class OfferService {
         return offerRepository.findByProfessional(professional);
     }
 
+    @Transactional(readOnly = true)
     public List<Offer> getOffersByProfessionalId(Long professionalId) {
         log.debug("Service: Getting offers for professional ID {}", professionalId);
         return offerRepository.findByProfessionalId(professionalId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Offer> getActiveOffersByProfessionalId(Long professionalId) {
+        log.debug("Service: Getting active offers for professional ID {}", professionalId);
+        return offerRepository.findByFilters(null, null, professionalId, null, OfferStatus.ACTIVE, true, LocalDateTime.now());
     }
 
     public Offer getOfferById(Long id) {

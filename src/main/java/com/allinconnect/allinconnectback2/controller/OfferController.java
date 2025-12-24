@@ -55,6 +55,18 @@ public class OfferController {
         return ResponseEntity.ok(offerService.getOffersByProfessionalId(professionalId));
     }
 
+    @GetMapping("/professional/{professionalId}/active")
+    public ResponseEntity<List<Offer>> getActiveOffersByProfessional(@PathVariable Long professionalId) {
+        log.debug("Getting active offers for professional ID: {}", professionalId);
+        return ResponseEntity.ok(offerService.getActiveOffersByProfessionalId(professionalId));
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<Offer>> getActiveOffers() {
+        log.debug("Getting all active offers");
+        return ResponseEntity.ok(offerService.getActiveOffers());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Offer> getOfferById(@PathVariable Long id) {
         log.debug("Getting offer by id: {}", id);
