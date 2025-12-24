@@ -4,6 +4,7 @@ import com.allinconnect.allinconnectback2.dto.*;
 import com.allinconnect.allinconnectback2.entity.Card;
 import com.allinconnect.allinconnectback2.entity.SubscriptionPlan;
 import com.allinconnect.allinconnectback2.entity.User;
+import com.allinconnect.allinconnectback2.event.ProfessionalCreatedEvent;
 import com.allinconnect.allinconnectback2.model.CardType;
 import com.allinconnect.allinconnectback2.model.PlanCategory;
 import com.allinconnect.allinconnectback2.repository.CardRepository;
@@ -32,6 +33,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final CardRepository cardRepository;
     private final SubscriptionPlanRepository subscriptionPlanRepository;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public AuthenticationService(
             UserRepository userRepository,
@@ -39,7 +41,8 @@ public class AuthenticationService {
             JwtService jwtService,
             AuthenticationManager authenticationManager,
             CardRepository cardRepository,
-            SubscriptionPlanRepository subscriptionPlanRepository
+            SubscriptionPlanRepository subscriptionPlanRepository,
+            org.springframework.context.ApplicationEventPublisher eventPublisher
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -47,6 +50,7 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
         this.cardRepository = cardRepository;
         this.subscriptionPlanRepository = subscriptionPlanRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -111,6 +115,11 @@ public class AuthenticationService {
         }
         
         userRepository.save(user);
+
+        if (user.getUserType() == com.allinconnect.allinconnectback2.model.UserType.PROFESSIONAL) {
+            log.info("Publishing ProfessionalCreatedEvent for user ID: {}", user.getId());
+            eventPublisher.publishEvent(new ProfessionalCreatedEvent(user.getId()));
+        }
 
         // Si l'utilisateur a un plan et pas de carte (et n'est pas déjà rattaché à une carte famille), on lui crée sa propre carte
         if (user.getSubscriptionPlan() != null && user.getCard() == null) {

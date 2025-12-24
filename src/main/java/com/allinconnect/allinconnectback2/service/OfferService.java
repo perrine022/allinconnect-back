@@ -2,6 +2,7 @@ package com.allinconnect.allinconnectback2.service;
 
 import com.allinconnect.allinconnectback2.entity.Offer;
 import com.allinconnect.allinconnectback2.entity.User;
+import com.allinconnect.allinconnectback2.event.OfferCreatedEvent;
 import com.allinconnect.allinconnectback2.model.OfferStatus;
 import com.allinconnect.allinconnectback2.model.OfferType;
 import com.allinconnect.allinconnectback2.model.ProfessionCategory;
@@ -10,6 +11,7 @@ import com.allinconnect.allinconnectback2.repository.OfferRepository;
 import com.allinconnect.allinconnectback2.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +25,12 @@ public class OfferService {
     private static final Logger log = LoggerFactory.getLogger(OfferService.class);
     private final UserRepository userRepository;
     private final OfferRepository offerRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public OfferService(OfferRepository offerRepository, UserRepository userRepository) {
+    public OfferService(OfferRepository offerRepository, UserRepository userRepository, ApplicationEventPublisher eventPublisher) {
         this.offerRepository = offerRepository;
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     private User ensureUser(User user) {
@@ -46,7 +50,12 @@ public class OfferService {
         }
         offer.setProfessional(professional);
         offer.setStatus(OfferStatus.ACTIVE);
-        return offerRepository.save(offer);
+        Offer savedOffer = offerRepository.save(offer);
+        
+        log.info("Publishing OfferCreatedEvent for offer ID: {}", savedOffer.getId());
+        eventPublisher.publishEvent(new OfferCreatedEvent(savedOffer.getId()));
+        
+        return savedOffer;
     }
 
     @Transactional(readOnly = true)
