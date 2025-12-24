@@ -6,16 +6,17 @@ import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.repository.PaymentRepository;
 import com.allinconnect.allinconnectback2.repository.SubscriptionPlanRepository;
 import com.allinconnect.allinconnectback2.repository.UserRepository;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Slf4j
 public class SubscriptionService {
 
+    private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
     private final SubscriptionPlanRepository subscriptionPlanRepository;
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;

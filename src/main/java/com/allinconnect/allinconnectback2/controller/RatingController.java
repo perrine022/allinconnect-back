@@ -4,7 +4,8 @@ import com.allinconnect.allinconnectback2.dto.RatingRequest;
 import com.allinconnect.allinconnectback2.entity.Rating;
 import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.service.RatingService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +14,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/ratings")
-@Slf4j
 public class RatingController {
 
+    private static final Logger log = LoggerFactory.getLogger(RatingController.class);
     private final RatingService ratingService;
 
     public RatingController(RatingService ratingService) {

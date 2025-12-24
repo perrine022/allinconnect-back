@@ -4,15 +4,16 @@ import com.allinconnect.allinconnectback2.entity.Rating;
 import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.repository.RatingRepository;
 import com.allinconnect.allinconnectback2.repository.UserRepository;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@Slf4j
 public class RatingService {
 
+    private static final Logger log = LoggerFactory.getLogger(RatingService.class);
     private final RatingRepository ratingRepository;
     private final UserRepository userRepository;
 

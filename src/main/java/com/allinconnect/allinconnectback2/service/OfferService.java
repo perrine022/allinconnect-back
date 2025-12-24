@@ -6,15 +6,16 @@ import com.allinconnect.allinconnectback2.model.OfferStatus;
 import com.allinconnect.allinconnectback2.model.ProfessionCategory;
 import com.allinconnect.allinconnectback2.model.UserType;
 import com.allinconnect.allinconnectback2.repository.OfferRepository;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@Slf4j
 public class OfferService {
 
+    private static final Logger log = LoggerFactory.getLogger(OfferService.class);
     private final OfferRepository offerRepository;
 
     public OfferService(OfferRepository offerRepository) {

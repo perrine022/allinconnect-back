@@ -4,7 +4,8 @@ import com.allinconnect.allinconnectback2.entity.Offer;
 import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.model.ProfessionCategory;
 import com.allinconnect.allinconnectback2.service.OfferService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +14,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/offers")
-@Slf4j
 public class OfferController {
 
+    private static final Logger log = LoggerFactory.getLogger(OfferController.class);
     private final OfferService offerService;
 
     public OfferController(OfferService offerService) {

@@ -4,7 +4,8 @@ import com.allinconnect.allinconnectback2.entity.Payment;
 import com.allinconnect.allinconnectback2.entity.SubscriptionPlan;
 import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.service.SubscriptionService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +14,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/subscriptions")
-@Slf4j
 public class SubscriptionController {
 
+    private static final Logger log = LoggerFactory.getLogger(SubscriptionController.class);
     private final SubscriptionService subscriptionService;
 
     public SubscriptionController(SubscriptionService subscriptionService) {
