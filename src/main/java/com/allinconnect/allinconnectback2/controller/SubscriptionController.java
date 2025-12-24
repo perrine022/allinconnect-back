@@ -46,4 +46,11 @@ public class SubscriptionController {
         log.debug("Getting payments for user: {}", user.getEmail());
         return ResponseEntity.ok(subscriptionService.getUserPayments(user));
     }
+
+    @PostMapping("/invite")
+    public ResponseEntity<Void> inviteMember(@AuthenticationPrincipal User owner, @RequestParam String email) {
+        log.debug("User {} inviting email {}", owner.getEmail(), email);
+        subscriptionService.inviteMember(owner, email);
+        return ResponseEntity.ok().build();
+    }
 }

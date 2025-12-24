@@ -1,8 +1,10 @@
 package com.allinconnect.allinconnectback2.service;
 
+import com.allinconnect.allinconnectback2.entity.Card;
 import com.allinconnect.allinconnectback2.entity.Payment;
 import com.allinconnect.allinconnectback2.entity.SubscriptionPlan;
 import com.allinconnect.allinconnectback2.entity.User;
+import com.allinconnect.allinconnectback2.model.CardType;
 import com.allinconnect.allinconnectback2.model.UserType;
 import com.allinconnect.allinconnectback2.repository.PaymentRepository;
 import com.allinconnect.allinconnectback2.repository.SubscriptionPlanRepository;
@@ -10,11 +12,13 @@ import com.allinconnect.allinconnectback2.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Transactional
 public class SubscriptionService {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
@@ -78,9 +82,34 @@ public class SubscriptionService {
         return userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public List<Payment> getUserPayments(User user) {
         user = ensureUser(user);
         log.debug("Service: Getting payments for user {}", user.getEmail());
         return paymentRepository.findByUser(user);
+    }
+
+    public void inviteMember(User owner, String email) {
+        User finalOwner = ensureUser(owner);
+        if (finalOwner.getCard() == null || finalOwner.getCard().getType() != CardType.FAMILY) {
+            throw new RuntimeException("Only family card owners can invite members");
+        }
+        
+        Card card = finalOwner.getCard();
+        if (card.getMembers().size() + card.getInvitedEmails().size() >= 4) {
+            throw new RuntimeException("Family card is full (max 4)");
+        }
+        
+        if (!card.getInvitedEmails().contains(email)) {
+            card.getInvitedEmails().add(email);
+            // Si l'utilisateur existe déjà, on le rattache tout de suite
+            userRepository.findByEmail(email).ifPresent(user -> {
+                user.setCard(card);
+                user.setSubscriptionPlan(finalOwner.getSubscriptionPlan());
+                user.setSubscriptionDate(LocalDateTime.now());
+                userRepository.save(user);
+                card.getInvitedEmails().remove(email);
+            });
+        }
     }
 }

@@ -78,6 +78,17 @@ public class AuthenticationService {
         User user = userBuilder.build();
         user.setReferralCode(personalReferralCode);
 
+        // --- Vérification Invitation Carte Famille par Email ---
+        cardRepository.findFamilyCardByInvitedEmail(request.getEmail()).ifPresent(familyCard -> {
+            log.debug("User invited to family card: {}", familyCard.getCardNumber());
+            user.setCard(familyCard);
+            // On rattache l'abonnement du propriétaire
+            if (familyCard.getOwner() != null && familyCard.getOwner().getSubscriptionPlan() != null) {
+                user.setSubscriptionPlan(familyCard.getOwner().getSubscriptionPlan());
+                user.setSubscriptionDate(LocalDateTime.now());
+            }
+        });
+
         if (request.getReferralCode() != null && !request.getReferralCode().isEmpty()) {
             log.debug("Applying referral code: {}", request.getReferralCode());
             userRepository.findByReferralCode(request.getReferralCode()).ifPresent(user::setReferrer);
