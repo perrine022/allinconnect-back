@@ -8,7 +8,8 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Run
-FROM openjdk:17-jdk-slim
+# Utilisation d'une image stable Eclipse Temurin (recommandée par Docker et Render)
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
