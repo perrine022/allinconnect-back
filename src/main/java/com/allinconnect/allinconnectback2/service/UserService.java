@@ -10,10 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class UserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
@@ -45,11 +47,13 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public List<User> findProfessionalsByCity(String city) {
         log.debug("Service: Finding professionals in city {}", city);
         return userRepository.findByUserTypeAndCity(UserType.PROFESSIONAL, city);
     }
 
+    @Transactional(readOnly = true)
     public List<User> searchProfessionals(String city, ProfessionCategory category, String name, Double lat, Double lon, Double radius) {
         log.debug("Service: Searching professionals with city: {}, category: {}, name: {}, lat: {}, lon: {}, radius: {}", city, category, name, lat, lon, radius);
         
@@ -94,6 +98,7 @@ public class UserService {
         return R * c;
     }
 
+    @Transactional(readOnly = true)
     public List<User> findAllProfessionals() {
         log.debug("Service: Finding all professionals");
         return userRepository.findAll().stream()
@@ -126,6 +131,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public List<User> getFavorites(User user) {
         user = ensureUser(user);
         log.debug("Service: Getting favorites for user {}", user.getEmail());
@@ -154,22 +160,28 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public UserLightResponse getUserLightInfo(User user) {
+        // We re-fetch the user to ensure we are in a persistence context
+        // and can access lazy collections
         user = ensureUser(user);
-        log.debug("Service: Getting light info for user {}", user.getEmail());
+        final User finalUser = userRepository.findByEmail(user.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        log.debug("Service: Getting light info for user {}", finalUser.getEmail());
         
         return UserLightResponse.builder()
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .isMember(user.getSubscriptionPlan() != null)
-                .card(user.getCard())
-                .isCardActive(user.getCard() != null && user.getSubscriptionPlan() != null)
-                .referralCount(user.getReferrals() != null ? user.getReferrals().size() : 0)
-                .favoriteCount(user.getFavorites() != null ? user.getFavorites().size() : 0)
-                .subscriptionDate(user.getSubscriptionDate())
-                .renewalDate(user.getRenewalDate())
-                .subscriptionAmount(user.getSubscriptionAmount())
-                .payments(user.getPayments())
+                .firstName(finalUser.getFirstName())
+                .lastName(finalUser.getLastName())
+                .isMember(finalUser.getSubscriptionPlan() != null)
+                .card(finalUser.getCard())
+                .isCardActive(finalUser.getCard() != null && finalUser.getSubscriptionPlan() != null)
+                .referralCount(finalUser.getReferrals() != null ? finalUser.getReferrals().size() : 0)
+                .favoriteCount(finalUser.getFavorites() != null ? finalUser.getFavorites().size() : 0)
+                .subscriptionDate(finalUser.getSubscriptionDate())
+                .renewalDate(finalUser.getRenewalDate())
+                .subscriptionAmount(finalUser.getSubscriptionAmount())
+                .payments(finalUser.getPayments())
                 .build();
     }
 }

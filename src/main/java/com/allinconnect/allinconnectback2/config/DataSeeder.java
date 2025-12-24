@@ -85,14 +85,16 @@ public class DataSeeder {
                 userRepository.save(pro);
                 pros.add(pro);
 
-                // --- Offers for each pro ---
+                // --- Offers and Events for each pro ---
                 for (int j = 1; j <= 3; j++) {
                     Offer offer = new Offer();
-                    offer.setTitle("Offre " + professions[i] + " " + j);
-                    offer.setDescription("Description détaillée pour l'offre " + j + " du professionnel " + professions[i]);
+                    boolean isEvent = (j == 3); // Le 3ème est un événement
+                    offer.setTitle((isEvent ? "Evénement " : "Offre ") + professions[i] + " " + j);
+                    offer.setDescription("Description détaillée pour " + (isEvent ? "l'événement " : "l'offre ") + j + " du professionnel " + professions[i]);
                     offer.setPrice(10.0 + random.nextInt(90));
-                    offer.setStartDate(LocalDate.now());
-                    offer.setEndDate(LocalDate.now().plusMonths(1));
+                    offer.setStartDate(LocalDateTime.now());
+                    offer.setEndDate(LocalDateTime.now().plusMonths(1));
+                    offer.setType(isEvent ? OfferType.EVENEMENT : OfferType.OFFRE);
                     offer.setFeatured(random.nextBoolean());
                     offer.setStatus(OfferStatus.ACTIVE);
                     offer.setProfessional(pro);
@@ -100,7 +102,35 @@ public class DataSeeder {
                 }
             }
 
-            // --- Main Client User (Complete Profile) ---
+            // --- Main Client User (Perrine) ---
+            User perrine = User.builder()
+                    .firstName("Perrine")
+                    .lastName("Honore")
+                    .email("perrine@gmail.com")
+                    .password(passwordEncoder.encode("Perrine"))
+                    .address("10 Rue du Commerce")
+                    .city("Paris")
+                    .latitude(48.8566)
+                    .longitude(2.3522)
+                    .birthDate(LocalDate.of(1995, 5, 20))
+                    .userType(UserType.CLIENT)
+                    .subscriptionType(SubscriptionType.PREMIUM)
+                    .subscriptionPlan(clientFamily)
+                    .subscriptionDate(LocalDateTime.now().minusMonths(1))
+                    .hasConnectedBefore(true)
+                    .build();
+            perrine.setRenewalDate(LocalDateTime.now().plusDays(20));
+            perrine.setSubscriptionAmount(clientFamily.getPrice());
+            perrine.setReferralCode("PERRINECODE");
+            userRepository.save(perrine);
+
+            // Add Card to Perrine (Family)
+            Card perrineCard = new Card("FAM-777-888", CardType.FAMILY, perrine);
+            cardRepository.save(perrineCard);
+            perrine.setCard(perrineCard);
+            userRepository.save(perrine);
+
+            // --- Secondary Client User (Jean Dupont) ---
             User mainClient = User.builder()
                     .firstName("Jean")
                     .lastName("Dupont")

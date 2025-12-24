@@ -2,6 +2,7 @@ package com.allinconnect.allinconnectback2.controller;
 
 import com.allinconnect.allinconnectback2.entity.Offer;
 import com.allinconnect.allinconnectback2.entity.User;
+import com.allinconnect.allinconnectback2.model.OfferType;
 import com.allinconnect.allinconnectback2.model.ProfessionCategory;
 import com.allinconnect.allinconnectback2.service.OfferService;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class OfferController {
 
     @PostMapping
     public ResponseEntity<Offer> createOffer(@RequestBody Offer offer, @AuthenticationPrincipal User professional) {
-        log.debug("Creating offer for professional: {}", professional.getEmail());
+        log.debug("Creating offer/event for professional: {}", professional.getEmail());
         return ResponseEntity.ok(offerService.createOffer(offer, professional));
     }
 
@@ -33,10 +34,11 @@ public class OfferController {
     public ResponseEntity<List<Offer>> getAllOffers(
             @RequestParam(required = false) String city,
             @RequestParam(required = false) ProfessionCategory category,
-            @RequestParam(required = false) Long professionalId) {
-        log.debug("Getting all offers with filters - city: {}, category: {}, professionalId: {}", city, category, professionalId);
-        if (city != null || category != null || professionalId != null) {
-            return ResponseEntity.ok(offerService.getOffersByFilters(city, category, professionalId));
+            @RequestParam(required = false) Long professionalId,
+            @RequestParam(required = false) OfferType type) {
+        log.debug("Getting all offers with filters - city: {}, category: {}, professionalId: {}, type: {}", city, category, professionalId, type);
+        if (city != null || category != null || professionalId != null || type != null) {
+            return ResponseEntity.ok(offerService.getOffersByFilters(city, category, professionalId, type));
         }
         return ResponseEntity.ok(offerService.getAllOffers());
     }

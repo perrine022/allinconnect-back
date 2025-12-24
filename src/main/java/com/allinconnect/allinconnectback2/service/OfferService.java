@@ -3,6 +3,7 @@ package com.allinconnect.allinconnectback2.service;
 import com.allinconnect.allinconnectback2.entity.Offer;
 import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.model.OfferStatus;
+import com.allinconnect.allinconnectback2.model.OfferType;
 import com.allinconnect.allinconnectback2.model.ProfessionCategory;
 import com.allinconnect.allinconnectback2.model.UserType;
 import com.allinconnect.allinconnectback2.repository.OfferRepository;
@@ -10,10 +11,12 @@ import com.allinconnect.allinconnectback2.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class OfferService {
 
     private static final Logger log = LoggerFactory.getLogger(OfferService.class);
@@ -45,14 +48,16 @@ public class OfferService {
         return offerRepository.save(offer);
     }
 
+    @Transactional(readOnly = true)
     public List<Offer> getAllOffers() {
         log.debug("Service: Getting all offers");
         return offerRepository.findAll();
     }
 
-    public List<Offer> getOffersByFilters(String city, ProfessionCategory category, Long professionalId) {
-        log.debug("Service: Getting offers with filters - city: {}, category: {}, professionalId: {}", city, category, professionalId);
-        return offerRepository.findByFilters(city, category, professionalId, OfferStatus.ACTIVE);
+    @Transactional(readOnly = true)
+    public List<Offer> getOffersByFilters(String city, ProfessionCategory category, Long professionalId, OfferType type) {
+        log.debug("Service: Getting offers with filters - city: {}, category: {}, professionalId: {}, type: {}", city, category, professionalId, type);
+        return offerRepository.findByFilters(city, category, professionalId, type, OfferStatus.ACTIVE);
     }
 
     public List<Offer> getOffersByProfessional(User professional) {
@@ -85,6 +90,8 @@ public class OfferService {
         offer.setPrice(offerDetails.getPrice());
         offer.setStartDate(offerDetails.getStartDate());
         offer.setEndDate(offerDetails.getEndDate());
+        offer.setImageUrl(offerDetails.getImageUrl());
+        offer.setType(offerDetails.getType());
         offer.setFeatured(offerDetails.isFeatured());
         offer.setStatus(OfferStatus.ACTIVE);
         
