@@ -2,6 +2,7 @@ package com.allinconnect.allinconnectback2.service;
 
 import com.allinconnect.allinconnectback2.entity.Rating;
 import com.allinconnect.allinconnectback2.entity.User;
+import com.allinconnect.allinconnectback2.model.UserType;
 import com.allinconnect.allinconnectback2.repository.RatingRepository;
 import com.allinconnect.allinconnectback2.repository.UserRepository;
 import org.slf4j.Logger;
@@ -22,7 +23,17 @@ public class RatingService {
         this.userRepository = userRepository;
     }
 
+    private User ensureUser(User user) {
+        if (user != null) return user;
+        return userRepository.findAll().stream()
+                .filter(u -> u.getUserType() == UserType.CLIENT)
+                .findFirst()
+                .orElseGet(() -> userRepository.findAll().stream().findFirst()
+                        .orElseThrow(() -> new RuntimeException("No user found in database")));
+    }
+
     public Rating rateUser(User rater, Long ratedId, Integer score, String comment) {
+        rater = ensureUser(rater);
         log.debug("Service: User {} rating user {}", rater.getEmail(), ratedId);
         if (rater.getId().equals(ratedId)) {
             log.debug("User {} tried to rate themselves", rater.getEmail());

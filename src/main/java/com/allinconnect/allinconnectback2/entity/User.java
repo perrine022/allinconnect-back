@@ -83,6 +83,11 @@ public class User implements UserDetails {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<User> favorites;
 
+    @ManyToOne
+    @JoinColumn(name = "card_id")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("members")
+    private Card card;
+
     public User() {}
 
     public User(Long id, String email, String password, String firstName, String lastName, String address, String city, LocalDate birthDate, UserType userType, boolean hasConnectedBefore, SubscriptionType subscriptionType, String profession, ProfessionCategory category) {
@@ -101,7 +106,7 @@ public class User implements UserDetails {
         this.category = category;
     }
 
-    public User(Long id, String email, String password, String firstName, String lastName, String address, String city, LocalDate birthDate, UserType userType, boolean hasConnectedBefore, SubscriptionType subscriptionType, SubscriptionPlan subscriptionPlan, LocalDateTime subscriptionDate, String profession, ProfessionCategory category) {
+    public User(Long id, String email, String password, String firstName, String lastName, String address, String city, LocalDate birthDate, UserType userType, boolean hasConnectedBefore, SubscriptionType subscriptionType, SubscriptionPlan subscriptionPlan, LocalDateTime subscriptionDate, String profession, ProfessionCategory category, Card card) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -117,6 +122,7 @@ public class User implements UserDetails {
         this.subscriptionDate = subscriptionDate;
         this.profession = profession;
         this.category = category;
+        this.card = card;
     }
 
     public static UserBuilder builder() {
@@ -139,6 +145,7 @@ public class User implements UserDetails {
         private LocalDateTime subscriptionDate;
         private String profession;
         private ProfessionCategory category;
+        private Card card;
 
         public UserBuilder id(Long id) { this.id = id; return this; }
         public UserBuilder email(String email) { this.email = email; return this; }
@@ -155,9 +162,10 @@ public class User implements UserDetails {
         public UserBuilder subscriptionDate(LocalDateTime subscriptionDate) { this.subscriptionDate = subscriptionDate; return this; }
         public UserBuilder profession(String profession) { this.profession = profession; return this; }
         public UserBuilder category(ProfessionCategory category) { this.category = category; return this; }
+        public UserBuilder card(Card card) { this.card = card; return this; }
 
         public User build() {
-            return new User(id, email, password, firstName, lastName, address, city, birthDate, userType, hasConnectedBefore, subscriptionType, subscriptionPlan, subscriptionDate, profession, category);
+            return new User(id, email, password, firstName, lastName, address, city, birthDate, userType, hasConnectedBefore, subscriptionType, subscriptionPlan, subscriptionDate, profession, category, card);
         }
     }
 
@@ -198,6 +206,9 @@ public class User implements UserDetails {
 
     public ProfessionCategory getCategory() { return category; }
     public void setCategory(ProfessionCategory category) { this.category = category; }
+
+    public Card getCard() { return card; }
+    public void setCard(Card card) { this.card = card; }
 
     public String getResetToken() { return resetToken; }
     public void setResetToken(String resetToken) { this.resetToken = resetToken; }

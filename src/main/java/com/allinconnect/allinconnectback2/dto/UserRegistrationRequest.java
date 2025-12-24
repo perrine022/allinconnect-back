@@ -19,10 +19,12 @@ public class UserRegistrationRequest {
     private String profession;
     private ProfessionCategory category;
     private String referralCode;
+    private String cardNumber;
+    private Long subscriptionPlanId;
 
     public UserRegistrationRequest() {}
 
-    public UserRegistrationRequest(String email, String password, String firstName, String lastName, String address, String city, LocalDate birthDate, UserType userType, SubscriptionType subscriptionType, String profession, ProfessionCategory category, String referralCode) {
+    public UserRegistrationRequest(String email, String password, String firstName, String lastName, String address, String city, LocalDate birthDate, UserType userType, SubscriptionType subscriptionType, String profession, ProfessionCategory category, String referralCode, String cardNumber, Long subscriptionPlanId) {
         this.email = email;
         this.password = password;
         this.firstName = firstName;
@@ -35,6 +37,8 @@ public class UserRegistrationRequest {
         this.profession = profession;
         this.category = category;
         this.referralCode = referralCode;
+        this.cardNumber = cardNumber;
+        this.subscriptionPlanId = subscriptionPlanId;
     }
 
     public String getEmail() { return email; }
@@ -61,4 +65,8 @@ public class UserRegistrationRequest {
     public void setCategory(ProfessionCategory category) { this.category = category; }
     public String getReferralCode() { return referralCode; }
     public void setReferralCode(String referralCode) { this.referralCode = referralCode; }
+    public String getCardNumber() { return cardNumber; }
+    public void setCardNumber(String cardNumber) { this.cardNumber = cardNumber; }
+    public Long getSubscriptionPlanId() { return subscriptionPlanId; }
+    public void setSubscriptionPlanId(Long subscriptionPlanId) { this.subscriptionPlanId = subscriptionPlanId; }
 }

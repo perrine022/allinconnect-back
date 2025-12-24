@@ -1,7 +1,13 @@
 package com.allinconnect.allinconnectback2.service;
 
 import com.allinconnect.allinconnectback2.dto.*;
+import com.allinconnect.allinconnectback2.entity.Card;
+import com.allinconnect.allinconnectback2.entity.SubscriptionPlan;
 import com.allinconnect.allinconnectback2.entity.User;
+import com.allinconnect.allinconnectback2.model.CardType;
+import com.allinconnect.allinconnectback2.model.PlanCategory;
+import com.allinconnect.allinconnectback2.repository.CardRepository;
+import com.allinconnect.allinconnectback2.repository.SubscriptionPlanRepository;
 import com.allinconnect.allinconnectback2.repository.UserRepository;
 import com.allinconnect.allinconnectback2.security.JwtService;
 import org.slf4j.Logger;
@@ -10,6 +16,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -23,19 +30,26 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final CardRepository cardRepository;
+    private final SubscriptionPlanRepository subscriptionPlanRepository;
 
     public AuthenticationService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            AuthenticationManager authenticationManager
+            AuthenticationManager authenticationManager,
+            CardRepository cardRepository,
+            SubscriptionPlanRepository subscriptionPlanRepository
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.cardRepository = cardRepository;
+        this.subscriptionPlanRepository = subscriptionPlanRepository;
     }
 
+    @Transactional
     public AuthResponse register(UserRegistrationRequest request) {
         log.debug("Service: Registering user {}", request.getEmail());
         String personalReferralCode = generateReferralCode(request.getLastName());
@@ -53,6 +67,13 @@ public class AuthenticationService {
                 .profession(request.getProfession())
                 .category(request.getCategory())
                 .hasConnectedBefore(false);
+
+        if (request.getSubscriptionPlanId() != null) {
+            SubscriptionPlan plan = subscriptionPlanRepository.findById(request.getSubscriptionPlanId())
+                    .orElseThrow(() -> new RuntimeException("Subscription plan not found"));
+            userBuilder.subscriptionPlan(plan);
+            userBuilder.subscriptionDate(LocalDateTime.now());
+        }
         
         User user = userBuilder.build();
         user.setReferralCode(personalReferralCode);
@@ -61,12 +82,42 @@ public class AuthenticationService {
             log.debug("Applying referral code: {}", request.getReferralCode());
             userRepository.findByReferralCode(request.getReferralCode()).ifPresent(user::setReferrer);
         }
+
+        // Logique de Carte
+        if (request.getCardNumber() != null && !request.getCardNumber().isEmpty()) {
+            // Tentative de rattachement à une carte existante (Famille)
+            Card card = cardRepository.findByCardNumber(request.getCardNumber())
+                    .orElseThrow(() -> new RuntimeException("Card not found with number: " + request.getCardNumber()));
+            
+            if (card.getType() == CardType.FAMILY) {
+                if (card.getMembers().size() >= 4) {
+                    throw new RuntimeException("Family card is full (max 4 members)");
+                }
+                user.setCard(card);
+            } else {
+                throw new RuntimeException("Cannot attach to an individual card");
+            }
+        }
         
         userRepository.save(user);
+
+        // Si l'utilisateur a un plan et pas de carte (et n'est pas déjà rattaché à une carte famille), on lui crée sa propre carte
+        if (user.getSubscriptionPlan() != null && user.getCard() == null) {
+            CardType cardType = (user.getSubscriptionPlan().getCategory() == PlanCategory.FAMILY) ? CardType.FAMILY : CardType.INDIVIDUAL;
+            Card newCard = new Card(generateCardNumber(), cardType, user);
+            cardRepository.save(newCard);
+            user.setCard(newCard);
+            userRepository.save(user);
+        }
+
         var jwtToken = jwtService.generateToken(user);
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();
+    }
+
+    private String generateCardNumber() {
+        return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
     private String generateReferralCode(String lastName) {

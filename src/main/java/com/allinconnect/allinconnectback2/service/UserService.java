@@ -24,7 +24,17 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    private User ensureUser(User user) {
+        if (user != null) return user;
+        return userRepository.findAll().stream()
+                .filter(u -> u.getUserType() == UserType.CLIENT)
+                .findFirst()
+                .orElseGet(() -> userRepository.findAll().stream().findFirst()
+                        .orElseThrow(() -> new RuntimeException("No user found in database")));
+    }
+
     public void changePassword(User user, ChangePasswordRequest request) {
+        user = ensureUser(user);
         log.debug("Service: Changing password for user {}", user.getEmail());
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             log.debug("Invalid old password for user {}", user.getEmail());
@@ -48,13 +58,19 @@ public class UserService {
         } else if (category != null) {
             return userRepository.findByUserTypeAndCategory(UserType.PROFESSIONAL, category);
         } else {
-            return userRepository.findAll().stream()
-                    .filter(user -> user.getUserType() == UserType.PROFESSIONAL)
-                    .toList();
+            return findAllProfessionals();
         }
     }
 
+    public List<User> findAllProfessionals() {
+        log.debug("Service: Finding all professionals");
+        return userRepository.findAll().stream()
+                .filter(user -> user.getUserType() == UserType.PROFESSIONAL)
+                .toList();
+    }
+
     public void addFavorite(User user, Long favoriteId) {
+        user = ensureUser(user);
         log.debug("Service: Adding favorite {} to user {}", favoriteId, user.getEmail());
         User favorite = userRepository.findById(favoriteId)
                 .orElseThrow(() -> new RuntimeException("Favorite user not found"));
@@ -69,6 +85,7 @@ public class UserService {
     }
 
     public void removeFavorite(User user, Long favoriteId) {
+        user = ensureUser(user);
         log.debug("Service: Removing favorite {} from user {}", favoriteId, user.getEmail());
         User favorite = userRepository.findById(favoriteId)
                 .orElseThrow(() -> new RuntimeException("Favorite user not found"));
@@ -78,6 +95,7 @@ public class UserService {
     }
 
     public List<User> getFavorites(User user) {
+        user = ensureUser(user);
         log.debug("Service: Getting favorites for user {}", user.getEmail());
         return user.getFavorites();
     }

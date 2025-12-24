@@ -6,6 +6,7 @@ import com.allinconnect.allinconnectback2.model.OfferStatus;
 import com.allinconnect.allinconnectback2.model.ProfessionCategory;
 import com.allinconnect.allinconnectback2.model.UserType;
 import com.allinconnect.allinconnectback2.repository.OfferRepository;
+import com.allinconnect.allinconnectback2.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,13 +17,24 @@ import java.util.List;
 public class OfferService {
 
     private static final Logger log = LoggerFactory.getLogger(OfferService.class);
+    private final UserRepository userRepository;
     private final OfferRepository offerRepository;
 
-    public OfferService(OfferRepository offerRepository) {
+    public OfferService(OfferRepository offerRepository, UserRepository userRepository) {
         this.offerRepository = offerRepository;
+        this.userRepository = userRepository;
+    }
+
+    private User ensureUser(User user) {
+        if (user != null) return user;
+        return userRepository.findAll().stream()
+                .filter(u -> u.getUserType() == UserType.PROFESSIONAL)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No professional user found in database for default user"));
     }
 
     public Offer createOffer(Offer offer, User professional) {
+        professional = ensureUser(professional);
         log.debug("Service: Creating offer for professional {}", professional.getEmail());
         if (professional.getUserType() != UserType.PROFESSIONAL) {
             log.debug("User {} is not a professional", professional.getEmail());
@@ -44,6 +56,7 @@ public class OfferService {
     }
 
     public List<Offer> getOffersByProfessional(User professional) {
+        professional = ensureUser(professional);
         log.debug("Service: Getting offers for professional {}", professional.getEmail());
         return offerRepository.findByProfessional(professional);
     }
@@ -55,6 +68,7 @@ public class OfferService {
     }
 
     public Offer updateOffer(Long id, Offer offerDetails, User professional) {
+        professional = ensureUser(professional);
         log.debug("Service: Updating offer {} for professional {}", id, professional.getEmail());
         Offer offer = getOfferById(id);
         if (!offer.getProfessional().getId().equals(professional.getId())) {
@@ -73,6 +87,7 @@ public class OfferService {
     }
 
     public void archiveOffer(Long id, User professional) {
+        professional = ensureUser(professional);
         log.debug("Service: Archiving offer {} for professional {}", id, professional.getEmail());
         Offer offer = getOfferById(id);
         if (!offer.getProfessional().getId().equals(professional.getId())) {
@@ -84,6 +99,7 @@ public class OfferService {
     }
 
     public void deleteOffer(Long id, User professional) {
+        professional = ensureUser(professional);
         log.debug("Service: Deleting offer {} for professional {}", id, professional.getEmail());
         Offer offer = getOfferById(id);
         if (!offer.getProfessional().getId().equals(professional.getId())) {

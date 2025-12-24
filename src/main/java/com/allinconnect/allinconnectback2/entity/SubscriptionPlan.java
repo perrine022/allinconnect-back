@@ -1,5 +1,7 @@
 package com.allinconnect.allinconnectback2.entity;
 
+import com.allinconnect.allinconnectback2.model.PlanCategory;
+import com.allinconnect.allinconnectback2.model.PlanDuration;
 import jakarta.persistence.*;
 
 @Entity
@@ -14,13 +16,21 @@ public class SubscriptionPlan {
     private String description;
     private Double price;
 
+    @Enumerated(EnumType.STRING)
+    private PlanCategory category;
+
+    @Enumerated(EnumType.STRING)
+    private PlanDuration duration;
+
     public SubscriptionPlan() {}
 
-    public SubscriptionPlan(Long id, String title, String description, Double price) {
+    public SubscriptionPlan(Long id, String title, String description, Double price, PlanCategory category, PlanDuration duration) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.price = price;
+        this.category = category;
+        this.duration = duration;
     }
 
     public Long getId() { return id; }
@@ -31,4 +41,8 @@ public class SubscriptionPlan {
     public void setDescription(String description) { this.description = description; }
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
+    public PlanCategory getCategory() { return category; }
+    public void setCategory(PlanCategory category) { this.category = category; }
+    public PlanDuration getDuration() { return duration; }
+    public void setDuration(PlanDuration duration) { this.duration = duration; }
 }

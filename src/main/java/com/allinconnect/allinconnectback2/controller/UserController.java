@@ -35,6 +35,12 @@ public class UserController {
     }
 
     @GetMapping("/professionals")
+    public ResponseEntity<List<User>> getAllProfessionals() {
+        log.debug("Getting all professionals");
+        return ResponseEntity.ok(userService.findAllProfessionals());
+    }
+
+    @GetMapping("/professionals/by-city")
     public ResponseEntity<List<User>> getProfessionalsByCity(@RequestParam String city) {
         log.debug("Getting professionals for city: {}", city);
         return ResponseEntity.ok(userService.findProfessionalsByCity(city));

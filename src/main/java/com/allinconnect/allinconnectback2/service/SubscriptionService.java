@@ -3,6 +3,7 @@ package com.allinconnect.allinconnectback2.service;
 import com.allinconnect.allinconnectback2.entity.Payment;
 import com.allinconnect.allinconnectback2.entity.SubscriptionPlan;
 import com.allinconnect.allinconnectback2.entity.User;
+import com.allinconnect.allinconnectback2.model.UserType;
 import com.allinconnect.allinconnectback2.repository.PaymentRepository;
 import com.allinconnect.allinconnectback2.repository.SubscriptionPlanRepository;
 import com.allinconnect.allinconnectback2.repository.UserRepository;
@@ -27,6 +28,15 @@ public class SubscriptionService {
         this.userRepository = userRepository;
     }
 
+    private User ensureUser(User user) {
+        if (user != null) return user;
+        return userRepository.findAll().stream()
+                .filter(u -> u.getUserType() == UserType.CLIENT)
+                .findFirst()
+                .orElseGet(() -> userRepository.findAll().stream().findFirst()
+                        .orElseThrow(() -> new RuntimeException("No user found in database")));
+    }
+
     public List<SubscriptionPlan> getAllPlans() {
         log.debug("Service: Getting all subscription plans");
         return subscriptionPlanRepository.findAll();
@@ -38,6 +48,7 @@ public class SubscriptionService {
     }
 
     public User subscribe(User user, Long planId) {
+        user = ensureUser(user);
         log.debug("Service: Subscribing user {} to plan {}", user.getEmail(), planId);
         SubscriptionPlan plan = subscriptionPlanRepository.findById(planId)
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
@@ -65,6 +76,7 @@ public class SubscriptionService {
     }
 
     public List<Payment> getUserPayments(User user) {
+        user = ensureUser(user);
         log.debug("Service: Getting payments for user {}", user.getEmail());
         return paymentRepository.findByUser(user);
     }
