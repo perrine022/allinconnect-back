@@ -17,4 +17,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByUserTypeAndCategory(UserType userType, ProfessionCategory category);
     List<User> findByUserTypeAndCityAndCategory(UserType userType, String city, ProfessionCategory category);
     Optional<User> findByReferralCode(String referralCode);
+    long countBySubscriptionPlanIsNotNull();
 }

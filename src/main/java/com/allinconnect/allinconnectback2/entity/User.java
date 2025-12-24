@@ -3,6 +3,7 @@ package com.allinconnect.allinconnectback2.entity;
 import com.allinconnect.allinconnectback2.model.ProfessionCategory;
 import com.allinconnect.allinconnectback2.model.SubscriptionType;
 import com.allinconnect.allinconnectback2.model.UserType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -95,6 +97,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "referrer")
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"referrer", "referrals"})
     private List<User> referrals;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("user")
+    private List<Saving> savings = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
@@ -269,6 +275,8 @@ public class User implements UserDetails {
     public void setReferrer(User referrer) { this.referrer = referrer; }
     public List<User> getReferrals() { return referrals; }
     public void setReferrals(List<User> referrals) { this.referrals = referrals; }
+    public List<Saving> getSavings() { return savings; }
+    public void setSavings(List<Saving> savings) { this.savings = savings; }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
