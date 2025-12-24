@@ -95,11 +95,11 @@ public class User implements UserDetails {
     private User referrer;
 
     @OneToMany(mappedBy = "referrer")
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"referrer", "referrals"})
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<User> referrals;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnoreProperties("user")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Saving> savings = new ArrayList<>();
 
     @ManyToMany

@@ -19,7 +19,7 @@ public class Offer {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private String imageUrl;
-    private boolean isFeatured;
+    private Boolean isFeatured = false;
 
     @Enumerated(EnumType.STRING)
     private OfferType type = OfferType.OFFRE;
@@ -29,12 +29,12 @@ public class Offer {
 
     @ManyToOne
     @JoinColumn(name = "professional_id", nullable = false)
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"offers", "payments", "authorities", "password", "username"})
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"offers", "payments", "authorities", "password", "username", "referrals", "savings", "favorites", "referrer"})
     private User professional;
 
     public Offer() {}
 
-    public Offer(Long id, String title, String description, Double price, LocalDateTime startDate, LocalDateTime endDate, String imageUrl, boolean isFeatured, OfferType type, OfferStatus status, User professional) {
+    public Offer(Long id, String title, String description, Double price, LocalDateTime startDate, LocalDateTime endDate, String imageUrl, Boolean isFeatured, OfferType type, OfferStatus status, User professional) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -42,7 +42,7 @@ public class Offer {
         this.startDate = startDate;
         this.endDate = endDate;
         this.imageUrl = imageUrl;
-        this.isFeatured = isFeatured;
+        this.isFeatured = isFeatured != null ? isFeatured : false;
         this.type = type;
         this.status = status;
         this.professional = professional;
@@ -64,8 +64,8 @@ public class Offer {
     public void setEndDate(LocalDateTime endDate) { this.endDate = endDate; }
     public OfferType getType() { return type; }
     public void setType(OfferType type) { this.type = type; }
-    public boolean isFeatured() { return isFeatured; }
-    public void setFeatured(boolean featured) { isFeatured = featured; }
+    public Boolean isFeatured() { return isFeatured != null ? isFeatured : false; }
+    public void setFeatured(Boolean featured) { isFeatured = featured != null ? featured : false; }
     public OfferStatus getStatus() { return status; }
     public void setStatus(OfferStatus status) { this.status = status; }
     public User getProfessional() { return professional; }
