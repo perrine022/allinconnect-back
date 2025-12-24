@@ -31,6 +31,8 @@ public class User implements UserDetails {
     private String lastName;
     private String address;
     private String city;
+    private Double latitude;
+    private Double longitude;
     private LocalDate birthDate;
 
     @Enumerated(EnumType.STRING)
@@ -46,6 +48,8 @@ public class User implements UserDetails {
     private SubscriptionPlan subscriptionPlan;
 
     private LocalDateTime subscriptionDate;
+    private LocalDateTime renewalDate;
+    private Double subscriptionAmount;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @com.fasterxml.jackson.annotation.JsonIgnore
@@ -60,6 +64,24 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private ProfessionCategory category;
+
+    private String establishmentName;
+    private String establishmentDescription;
+    private String phoneNumber;
+    private String website;
+    private String openingHours;
+
+    public String getEstablishmentName() { return establishmentName; }
+    public void setEstablishmentName(String establishmentName) { this.establishmentName = establishmentName; }
+    public String getEstablishmentDescription() { return establishmentDescription; }
+    public void setEstablishmentDescription(String establishmentDescription) { this.establishmentDescription = establishmentDescription; }
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    public String getWebsite() { return website; }
+    public void setWebsite(String website) { this.website = website; }
+    public String getOpeningHours() { return openingHours; }
+    public void setOpeningHours(String openingHours) { this.openingHours = openingHours; }
+
     private String resetToken;
     private LocalDateTime resetTokenExpiry;
 
@@ -90,7 +112,7 @@ public class User implements UserDetails {
 
     public User() {}
 
-    public User(Long id, String email, String password, String firstName, String lastName, String address, String city, LocalDate birthDate, UserType userType, boolean hasConnectedBefore, SubscriptionType subscriptionType, String profession, ProfessionCategory category) {
+    public User(Long id, String email, String password, String firstName, String lastName, String address, String city, Double latitude, Double longitude, LocalDate birthDate, UserType userType, boolean hasConnectedBefore, SubscriptionType subscriptionType, String profession, ProfessionCategory category) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -98,6 +120,8 @@ public class User implements UserDetails {
         this.lastName = lastName;
         this.address = address;
         this.city = city;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.birthDate = birthDate;
         this.userType = userType;
         this.hasConnectedBefore = hasConnectedBefore;
@@ -106,7 +130,7 @@ public class User implements UserDetails {
         this.category = category;
     }
 
-    public User(Long id, String email, String password, String firstName, String lastName, String address, String city, LocalDate birthDate, UserType userType, boolean hasConnectedBefore, SubscriptionType subscriptionType, SubscriptionPlan subscriptionPlan, LocalDateTime subscriptionDate, String profession, ProfessionCategory category, Card card) {
+    public User(Long id, String email, String password, String firstName, String lastName, String address, String city, Double latitude, Double longitude, LocalDate birthDate, UserType userType, boolean hasConnectedBefore, SubscriptionType subscriptionType, SubscriptionPlan subscriptionPlan, LocalDateTime subscriptionDate, String profession, ProfessionCategory category, Card card) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -114,6 +138,8 @@ public class User implements UserDetails {
         this.lastName = lastName;
         this.address = address;
         this.city = city;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.birthDate = birthDate;
         this.userType = userType;
         this.hasConnectedBefore = hasConnectedBefore;
@@ -137,6 +163,8 @@ public class User implements UserDetails {
         private String lastName;
         private String address;
         private String city;
+        private Double latitude;
+        private Double longitude;
         private LocalDate birthDate;
         private UserType userType;
         private boolean hasConnectedBefore;
@@ -145,6 +173,11 @@ public class User implements UserDetails {
         private LocalDateTime subscriptionDate;
         private String profession;
         private ProfessionCategory category;
+        private String establishmentName;
+        private String establishmentDescription;
+        private String phoneNumber;
+        private String website;
+        private String openingHours;
         private Card card;
 
         public UserBuilder id(Long id) { this.id = id; return this; }
@@ -154,6 +187,8 @@ public class User implements UserDetails {
         public UserBuilder lastName(String lastName) { this.lastName = lastName; return this; }
         public UserBuilder address(String address) { this.address = address; return this; }
         public UserBuilder city(String city) { this.city = city; return this; }
+        public UserBuilder latitude(Double latitude) { this.latitude = latitude; return this; }
+        public UserBuilder longitude(Double longitude) { this.longitude = longitude; return this; }
         public UserBuilder birthDate(LocalDate birthDate) { this.birthDate = birthDate; return this; }
         public UserBuilder userType(UserType userType) { this.userType = userType; return this; }
         public UserBuilder hasConnectedBefore(boolean hasConnectedBefore) { this.hasConnectedBefore = hasConnectedBefore; return this; }
@@ -162,10 +197,15 @@ public class User implements UserDetails {
         public UserBuilder subscriptionDate(LocalDateTime subscriptionDate) { this.subscriptionDate = subscriptionDate; return this; }
         public UserBuilder profession(String profession) { this.profession = profession; return this; }
         public UserBuilder category(ProfessionCategory category) { this.category = category; return this; }
+        public UserBuilder establishmentName(String establishmentName) { this.establishmentName = establishmentName; return this; }
+        public UserBuilder establishmentDescription(String establishmentDescription) { this.establishmentDescription = establishmentDescription; return this; }
+        public UserBuilder phoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; return this; }
+        public UserBuilder website(String website) { this.website = website; return this; }
+        public UserBuilder openingHours(String openingHours) { this.openingHours = openingHours; return this; }
         public UserBuilder card(Card card) { this.card = card; return this; }
 
         public User build() {
-            return new User(id, email, password, firstName, lastName, address, city, birthDate, userType, hasConnectedBefore, subscriptionType, subscriptionPlan, subscriptionDate, profession, category, card);
+            return new User(id, email, password, firstName, lastName, address, city, latitude, longitude, birthDate, userType, hasConnectedBefore, subscriptionType, subscriptionPlan, subscriptionDate, profession, category, card);
         }
     }
 
@@ -182,6 +222,10 @@ public class User implements UserDetails {
     public void setAddress(String address) { this.address = address; }
     public String getCity() { return city; }
     public void setCity(String city) { this.city = city; }
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
     public LocalDate getBirthDate() { return birthDate; }
     public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
     public UserType getUserType() { return userType; }
@@ -194,6 +238,10 @@ public class User implements UserDetails {
     public void setSubscriptionPlan(SubscriptionPlan subscriptionPlan) { this.subscriptionPlan = subscriptionPlan; }
     public LocalDateTime getSubscriptionDate() { return subscriptionDate; }
     public void setSubscriptionDate(LocalDateTime subscriptionDate) { this.subscriptionDate = subscriptionDate; }
+    public LocalDateTime getRenewalDate() { return renewalDate; }
+    public void setRenewalDate(LocalDateTime renewalDate) { this.renewalDate = renewalDate; }
+    public Double getSubscriptionAmount() { return subscriptionAmount; }
+    public void setSubscriptionAmount(Double subscriptionAmount) { this.subscriptionAmount = subscriptionAmount; }
     public List<Payment> getPayments() { return payments; }
     public void setPayments(List<Payment> payments) { this.payments = payments; }
     public List<Offer> getOffers() { return offers; }

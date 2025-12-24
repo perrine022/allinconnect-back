@@ -55,6 +55,7 @@ public class SubscriptionService {
         
         user.setSubscriptionPlan(plan);
         user.setSubscriptionDate(LocalDateTime.now());
+        user.setRenewalDate(LocalDateTime.now().plusMonths(1));
         
         double amount = plan.getPrice();
         
@@ -63,6 +64,8 @@ public class SubscriptionService {
             log.debug("Applying referral discount for user {}", user.getEmail());
             amount = amount * 0.5;
         }
+        
+        user.setSubscriptionAmount(amount);
         
         // Simuler un paiement lors de la souscription
         log.debug("Recording payment of {} for user {}", amount, user.getEmail());

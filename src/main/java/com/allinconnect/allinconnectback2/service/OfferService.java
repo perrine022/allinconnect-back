@@ -61,6 +61,11 @@ public class OfferService {
         return offerRepository.findByProfessional(professional);
     }
 
+    public List<Offer> getOffersByProfessionalId(Long professionalId) {
+        log.debug("Service: Getting offers for professional ID {}", professionalId);
+        return offerRepository.findByProfessionalId(professionalId);
+    }
+
     public Offer getOfferById(Long id) {
         log.debug("Service: Getting offer by id {}", id);
         return offerRepository.findById(id)

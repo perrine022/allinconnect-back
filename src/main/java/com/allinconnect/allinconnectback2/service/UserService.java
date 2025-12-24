@@ -1,6 +1,7 @@
 package com.allinconnect.allinconnectback2.service;
 
 import com.allinconnect.allinconnectback2.dto.ChangePasswordRequest;
+import com.allinconnect.allinconnectback2.dto.UserLightResponse;
 import com.allinconnect.allinconnectback2.entity.User;
 import com.allinconnect.allinconnectback2.model.ProfessionCategory;
 import com.allinconnect.allinconnectback2.model.UserType;
@@ -49,17 +50,48 @@ public class UserService {
         return userRepository.findByUserTypeAndCity(UserType.PROFESSIONAL, city);
     }
 
-    public List<User> searchProfessionals(String city, ProfessionCategory category) {
-        log.debug("Service: Searching professionals with city: {} and category: {}", city, category);
-        if (city != null && category != null) {
-            return userRepository.findByUserTypeAndCityAndCategory(UserType.PROFESSIONAL, city, category);
-        } else if (city != null) {
-            return userRepository.findByUserTypeAndCity(UserType.PROFESSIONAL, city);
-        } else if (category != null) {
-            return userRepository.findByUserTypeAndCategory(UserType.PROFESSIONAL, category);
-        } else {
-            return findAllProfessionals();
-        }
+    public List<User> searchProfessionals(String city, ProfessionCategory category, String name, Double lat, Double lon, Double radius) {
+        log.debug("Service: Searching professionals with city: {}, category: {}, name: {}, lat: {}, lon: {}, radius: {}", city, category, name, lat, lon, radius);
+        
+        List<User> professionals = findAllProfessionals();
+
+        return professionals.stream()
+                .filter(pro -> {
+                    // Filter by city (exact match)
+                    if (city != null && !city.equalsIgnoreCase(pro.getCity())) return false;
+                    
+                    // Filter by category
+                    if (category != null && pro.getCategory() != category) return false;
+                    
+                    // Filter by name (firstName or lastName)
+                    if (name != null) {
+                        String lowerName = name.toLowerCase();
+                        boolean match = (pro.getFirstName() != null && pro.getFirstName().toLowerCase().contains(lowerName)) ||
+                                        (pro.getLastName() != null && pro.getLastName().toLowerCase().contains(lowerName));
+                        if (!match) return false;
+                    }
+                    
+                    // Filter by radius (if coordinates and radius are provided)
+                    if (lat != null && lon != null && radius != null && pro.getLatitude() != null && pro.getLongitude() != null) {
+                        double distance = calculateDistance(lat, lon, pro.getLatitude(), pro.getLongitude());
+                        if (distance > radius) return false;
+                    }
+                    
+                    return true;
+                })
+                .toList();
+    }
+
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        // Haversine formula
+        final int R = 6371; // Earth radius in km
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 
     public List<User> findAllProfessionals() {
@@ -98,5 +130,46 @@ public class UserService {
         user = ensureUser(user);
         log.debug("Service: Getting favorites for user {}", user.getEmail());
         return user.getFavorites();
+    }
+
+    public User updateProfile(User user, User details) {
+        user = ensureUser(user);
+        log.debug("Service: Updating profile for user {}", user.getEmail());
+        
+        if (details.getFirstName() != null) user.setFirstName(details.getFirstName());
+        if (details.getLastName() != null) user.setLastName(details.getLastName());
+        if (details.getAddress() != null) user.setAddress(details.getAddress());
+        if (details.getCity() != null) user.setCity(details.getCity());
+        if (details.getLatitude() != null) user.setLatitude(details.getLatitude());
+        if (details.getLongitude() != null) user.setLongitude(details.getLongitude());
+        if (details.getBirthDate() != null) user.setBirthDate(details.getBirthDate());
+        if (details.getProfession() != null) user.setProfession(details.getProfession());
+        if (details.getCategory() != null) user.setCategory(details.getCategory());
+        if (details.getEstablishmentName() != null) user.setEstablishmentName(details.getEstablishmentName());
+        if (details.getEstablishmentDescription() != null) user.setEstablishmentDescription(details.getEstablishmentDescription());
+        if (details.getPhoneNumber() != null) user.setPhoneNumber(details.getPhoneNumber());
+        if (details.getWebsite() != null) user.setWebsite(details.getWebsite());
+        if (details.getOpeningHours() != null) user.setOpeningHours(details.getOpeningHours());
+        
+        return userRepository.save(user);
+    }
+
+    public UserLightResponse getUserLightInfo(User user) {
+        user = ensureUser(user);
+        log.debug("Service: Getting light info for user {}", user.getEmail());
+        
+        return UserLightResponse.builder()
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .isMember(user.getSubscriptionPlan() != null)
+                .card(user.getCard())
+                .isCardActive(user.getCard() != null && user.getSubscriptionPlan() != null)
+                .referralCount(user.getReferrals() != null ? user.getReferrals().size() : 0)
+                .favoriteCount(user.getFavorites() != null ? user.getFavorites().size() : 0)
+                .subscriptionDate(user.getSubscriptionDate())
+                .renewalDate(user.getRenewalDate())
+                .subscriptionAmount(user.getSubscriptionAmount())
+                .payments(user.getPayments())
+                .build();
     }
 }
