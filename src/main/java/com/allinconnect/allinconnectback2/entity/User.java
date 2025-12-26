@@ -105,6 +105,8 @@ public class User implements UserDetails {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Saving> savings = new ArrayList<>();
 
+    private Double walletBalance = 0.0;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_favorites",
@@ -275,6 +277,9 @@ public class User implements UserDetails {
 
     public Card getCard() { return card; }
     public void setCard(Card card) { this.card = card; }
+
+    public Double getWalletBalance() { return walletBalance; }
+    public void setWalletBalance(Double walletBalance) { this.walletBalance = walletBalance; }
 
     public String getResetToken() { return resetToken; }
     public void setResetToken(String resetToken) { this.resetToken = resetToken; }

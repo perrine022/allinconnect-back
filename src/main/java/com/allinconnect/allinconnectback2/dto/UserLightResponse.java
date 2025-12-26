@@ -21,11 +21,12 @@ public class UserLightResponse {
     private LocalDateTime subscriptionDate;
     private LocalDateTime renewalDate;
     private Double subscriptionAmount;
+    private Double walletBalance;
     private List<Payment> payments;
 
     public UserLightResponse() {}
 
-    public UserLightResponse(String firstName, String lastName, boolean isMember, Card card, boolean isCardActive, int referralCount, int favoriteCount, LocalDateTime subscriptionDate, LocalDateTime renewalDate, Double subscriptionAmount, List<Payment> payments) {
+    public UserLightResponse(String firstName, String lastName, boolean isMember, Card card, boolean isCardActive, int referralCount, int favoriteCount, LocalDateTime subscriptionDate, LocalDateTime renewalDate, Double subscriptionAmount, Double walletBalance, List<Payment> payments) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.isMember = isMember;
@@ -36,6 +37,7 @@ public class UserLightResponse {
         this.subscriptionDate = subscriptionDate;
         this.renewalDate = renewalDate;
         this.subscriptionAmount = subscriptionAmount;
+        this.walletBalance = walletBalance;
         this.payments = payments;
     }
 
@@ -54,6 +56,7 @@ public class UserLightResponse {
         private LocalDateTime subscriptionDate;
         private LocalDateTime renewalDate;
         private Double subscriptionAmount;
+        private Double walletBalance;
         private List<Payment> payments;
 
         public UserLightResponseBuilder firstName(String firstName) { this.firstName = firstName; return this; }
@@ -66,10 +69,11 @@ public class UserLightResponse {
         public UserLightResponseBuilder subscriptionDate(LocalDateTime subscriptionDate) { this.subscriptionDate = subscriptionDate; return this; }
         public UserLightResponseBuilder renewalDate(LocalDateTime renewalDate) { this.renewalDate = renewalDate; return this; }
         public UserLightResponseBuilder subscriptionAmount(Double subscriptionAmount) { this.subscriptionAmount = subscriptionAmount; return this; }
+        public UserLightResponseBuilder walletBalance(Double walletBalance) { this.walletBalance = walletBalance; return this; }
         public UserLightResponseBuilder payments(List<Payment> payments) { this.payments = payments; return this; }
 
         public UserLightResponse build() {
-            return new UserLightResponse(firstName, lastName, isMember, card, isCardActive, referralCount, favoriteCount, subscriptionDate, renewalDate, subscriptionAmount, payments);
+            return new UserLightResponse(firstName, lastName, isMember, card, isCardActive, referralCount, favoriteCount, subscriptionDate, renewalDate, subscriptionAmount, walletBalance, payments);
         }
     }
 
@@ -93,6 +97,8 @@ public class UserLightResponse {
     public void setRenewalDate(LocalDateTime renewalDate) { this.renewalDate = renewalDate; }
     public Double getSubscriptionAmount() { return subscriptionAmount; }
     public void setSubscriptionAmount(Double subscriptionAmount) { this.subscriptionAmount = subscriptionAmount; }
+    public Double getWalletBalance() { return walletBalance; }
+    public void setWalletBalance(Double walletBalance) { this.walletBalance = walletBalance; }
     public List<Payment> getPayments() { return payments; }
     public void setPayments(List<Payment> payments) { this.payments = payments; }
 }

@@ -4,12 +4,14 @@ import com.allinconnect.allinconnectback2.dto.*;
 import com.allinconnect.allinconnectback2.entity.Card;
 import com.allinconnect.allinconnectback2.entity.SubscriptionPlan;
 import com.allinconnect.allinconnectback2.entity.User;
+import com.allinconnect.allinconnectback2.entity.WalletHistory;
 import com.allinconnect.allinconnectback2.event.ProfessionalCreatedEvent;
 import com.allinconnect.allinconnectback2.model.CardType;
 import com.allinconnect.allinconnectback2.model.PlanCategory;
 import com.allinconnect.allinconnectback2.repository.CardRepository;
 import com.allinconnect.allinconnectback2.repository.SubscriptionPlanRepository;
 import com.allinconnect.allinconnectback2.repository.UserRepository;
+import com.allinconnect.allinconnectback2.repository.WalletHistoryRepository;
 import com.allinconnect.allinconnectback2.security.JwtService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final CardRepository cardRepository;
     private final SubscriptionPlanRepository subscriptionPlanRepository;
+    private final WalletHistoryRepository walletHistoryRepository;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public AuthenticationService(
@@ -42,6 +45,7 @@ public class AuthenticationService {
             AuthenticationManager authenticationManager,
             CardRepository cardRepository,
             SubscriptionPlanRepository subscriptionPlanRepository,
+            WalletHistoryRepository walletHistoryRepository,
             org.springframework.context.ApplicationEventPublisher eventPublisher
     ) {
         this.userRepository = userRepository;
@@ -50,6 +54,7 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
         this.cardRepository = cardRepository;
         this.subscriptionPlanRepository = subscriptionPlanRepository;
+        this.walletHistoryRepository = walletHistoryRepository;
         this.eventPublisher = eventPublisher;
     }
 
@@ -95,7 +100,18 @@ public class AuthenticationService {
 
         if (request.getReferralCode() != null && !request.getReferralCode().isEmpty()) {
             log.debug("Applying referral code: {}", request.getReferralCode());
-            userRepository.findByReferralCode(request.getReferralCode()).ifPresent(user::setReferrer);
+            userRepository.findByReferralCode(request.getReferralCode()).ifPresent(referrer -> {
+                user.setReferrer(referrer);
+                // Créditer le parrain de 5€
+                double gain = 5.0;
+                referrer.setWalletBalance(referrer.getWalletBalance() + gain);
+                userRepository.save(referrer);
+                
+                // Ajouter à l'historique de la cagnotte du parrain
+                WalletHistory history = new WalletHistory(gain, "Gain parrainage de " + user.getFirstName() + " " + user.getLastName(), referrer);
+                walletHistoryRepository.save(history);
+                log.info("Credited 5€ to referrer {} for referral {}", referrer.getEmail(), user.getEmail());
+            });
         }
 
         // Logique de Carte

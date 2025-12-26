@@ -204,6 +204,7 @@ public class UserService {
                 .subscriptionDate(finalUser.getSubscriptionDate())
                 .renewalDate(finalUser.getRenewalDate())
                 .subscriptionAmount(finalUser.getSubscriptionAmount())
+                .walletBalance(finalUser.getWalletBalance())
                 .payments(finalUser.getPayments())
                 .build();
     }

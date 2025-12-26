@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS users (
     referral_code VARCHAR(255),
     referrer_id BIGINT,
     card_id BIGINT,
+    wallet_balance DOUBLE DEFAULT 0.0,
     PRIMARY KEY (id),
     UNIQUE (email),
     CONSTRAINT FK_users_subscription_plan FOREIGN KEY (subscription_plan_id) REFERENCES subscription_plans (id),
@@ -86,6 +87,27 @@ CREATE TABLE IF NOT EXISTS savings (
     user_id BIGINT NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT FK_savings_user FOREIGN KEY (user_id) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wallet_history (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    amount DOUBLE NOT NULL,
+    description TEXT,
+    date DATETIME NOT NULL,
+    user_id BIGINT NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT FK_wallet_history_user FOREIGN KEY (user_id) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wallet_requests (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    total_amount DOUBLE NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    created_at DATETIME NOT NULL,
+    user_id BIGINT NOT NULL,
+    professionals TEXT,
+    PRIMARY KEY (id),
+    CONSTRAINT FK_wallet_requests_user FOREIGN KEY (user_id) REFERENCES users (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS card_invited_emails (
