@@ -65,9 +65,42 @@ public class OfferService {
     }
 
     @Transactional(readOnly = true)
-    public List<Offer> getActiveOffers() {
-        log.debug("Service: Getting all active offers");
-        return offerRepository.findByFilters(null, null, null, null, OfferStatus.ACTIVE, true, LocalDateTime.now());
+    public List<Offer> getActiveOffers(Double lat, Double lon, Double radius) {
+        log.debug("Service: Getting active offers with proximity - lat: {}, lon: {}, radius: {}", lat, lon, radius);
+        List<Offer> allActiveOffers = offerRepository.findByFilters(null, null, null, null, OfferStatus.ACTIVE, true, LocalDateTime.now());
+
+        if (lat == null || lon == null || radius == null) {
+            return allActiveOffers;
+        }
+
+        List<Offer> filtered = allActiveOffers.stream()
+                .filter(offer -> {
+                    if (offer.getProfessional() != null && offer.getProfessional().getLatitude() != null && offer.getProfessional().getLongitude() != null) {
+                        double distance = calculateDistance(lat, lon, offer.getProfessional().getLatitude(), offer.getProfessional().getLongitude());
+                        return distance <= radius;
+                    }
+                    return false;
+                })
+                .toList();
+
+        if (filtered.isEmpty()) {
+            log.info("No active offers found within radius {} km of {}, {}. Returning all active offers as fallback.", radius, lat, lon);
+            return allActiveOffers;
+        }
+
+        return filtered;
+    }
+
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        // Haversine formula
+        final int R = 6371; // Earth radius in km
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 
     @Transactional(readOnly = true)

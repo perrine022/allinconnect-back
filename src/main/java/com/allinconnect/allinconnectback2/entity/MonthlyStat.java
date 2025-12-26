@@ -10,7 +10,9 @@ public class MonthlyStat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "stat_year")
     private int year;
+    @Column(name = "stat_month")
     private int month;
     private long activeUsers; // Utilisateurs avec abonnement
     private long totalUsers;  // Nombre total d'utilisateurs

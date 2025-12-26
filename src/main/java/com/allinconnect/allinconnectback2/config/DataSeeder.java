@@ -61,20 +61,26 @@ public class DataSeeder {
             }
 
             // 1. Clear tables with foreign keys to Users or Cards
-            deviceTokenRepository.deleteAll();
-            ratingRepository.deleteAll();
-            savingRepository.deleteAll();
-            paymentRepository.deleteAll();
-            offerRepository.deleteAll();
-            monthlyStatRepository.deleteAll();
+            try {
+                deviceTokenRepository.deleteAll();
+                ratingRepository.deleteAll();
+                savingRepository.deleteAll();
+                paymentRepository.deleteAll();
+                offerRepository.deleteAll();
+                monthlyStatRepository.deleteAll();
+            } catch (Exception e) {
+                log.warn("Could not clear related tables: {}", e.getMessage());
+            }
             
             // 2. Break other circular relationships (referral, favorites, members)
             try {
-                userRepository.findAll().forEach(u -> {
-                    u.setFavorites(new ArrayList<>());
-                    u.setReferrer(null);
-                    userRepository.save(u);
-                });
+                if (cardRepository.checkUsersTableExists() > 0) {
+                    userRepository.findAll().forEach(u -> {
+                        u.setFavorites(new ArrayList<>());
+                        u.setReferrer(null);
+                        userRepository.save(u);
+                    });
+                }
             } catch (Exception e) {
                 log.warn("Could not clear user relationships: {}", e.getMessage());
             }
@@ -84,8 +90,12 @@ public class DataSeeder {
             // But we already set card_id to NULL in step 0.
             
             // 3. Clear the rest
-            userRepository.deleteAll();
-            subscriptionPlanRepository.deleteAll();
+            try {
+                userRepository.deleteAll();
+                subscriptionPlanRepository.deleteAll();
+            } catch (Exception e) {
+                log.warn("Could not clear main tables: {}", e.getMessage());
+            }
 
             log.info("Seeding database with complete profiles...");
 
@@ -102,19 +112,19 @@ public class DataSeeder {
                 // --- Users (Professionals) ---
                 String[] professions = {"Coiffeur", "Boulanger", "Plombier", "Web Designer", "Consultant"};
                 ProfessionCategory[] categories = {ProfessionCategory.BEAUTE_ESTHETIQUE, ProfessionCategory.FOOD_PLAISIRS, ProfessionCategory.SERVICE_PRATIQUES, ProfessionCategory.ENTRE_PROS, ProfessionCategory.SERVICE_PRATIQUES};
-                Double[] lats = {48.8566, 45.7640, 43.2965, 44.8378, 48.1173}; // Paris, Lyon, Marseille, Bordeaux, Rennes
-                Double[] lons = {2.3522, 4.8357, 5.3698, -0.5792, -1.6778};
+                String[] cities = {"Nice", "Cannes", "Saint-Tropez", "Menton", "Nice"};
+                Double[] lats = {43.7102, 43.5528, 43.2727, 43.7745, 43.7102}; // Nice, Cannes, Saint-Tropez, Menton, Nice
+                Double[] lons = {7.2620, 7.0174, 6.6405, 7.4975, 7.2620};
 
                 List<User> pros = new ArrayList<>();
                 for (int i = 0; i < professions.length; i++) {
-                    String city = (i % 2 == 0) ? "Paris" : "Marseille"; // Alternance Paris / Marseille
                     User pro = User.builder()
                             .firstName("Pro" + (i + 1))
                             .lastName("NomPro" + (i + 1))
                             .email("pro" + (i + 1) + "@example.com")
                             .password(passwordEncoder.encode("password"))
-                            .address((i + 10) + " Rue de Rivoli")
-                            .city(city)
+                            .address((i + 10) + " Avenue Jean Médecin")
+                            .city(cities[i])
                             .latitude(lats[i])
                             .longitude(lons[i])
                             .birthDate(LocalDate.now().minusYears(30 + i))
@@ -160,10 +170,10 @@ public class DataSeeder {
                         .lastName("Honore")
                         .email("perrine@gmail.com")
                         .password(passwordEncoder.encode("Perrine"))
-                        .address("10 Rue du Commerce")
-                        .city("Paris")
-                        .latitude(48.8566)
-                        .longitude(2.3522)
+                        .address("10 Avenue Jean Médecin")
+                        .city("Nice")
+                        .latitude(43.7102)
+                        .longitude(7.2620)
                         .birthDate(LocalDate.of(1995, 5, 20))
                         .userType(UserType.CLIENT)
                         .subscriptionType(SubscriptionType.PREMIUM)
@@ -196,10 +206,10 @@ public class DataSeeder {
                         .lastName("Dupont")
                         .email("jean.dupont@example.com")
                         .password(passwordEncoder.encode("password"))
-                        .address("123 Rue de la Paix")
-                        .city("Paris")
-                        .latitude(48.8566)
-                        .longitude(2.3522)
+                        .address("5 Avenue de la Croisette")
+                        .city("Cannes")
+                        .latitude(43.5528)
+                        .longitude(7.0174)
                         .birthDate(LocalDate.of(1990, 1, 1))
                         .userType(UserType.CLIENT)
                         .subscriptionType(SubscriptionType.PREMIUM)

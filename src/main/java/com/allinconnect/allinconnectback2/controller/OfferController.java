@@ -63,9 +63,12 @@ public class OfferController {
     }
 
     @GetMapping("/active")
-    public ResponseEntity<List<Offer>> getActiveOffers() {
-        log.debug("Getting all active offers");
-        return ResponseEntity.ok(offerService.getActiveOffers());
+    public ResponseEntity<List<Offer>> getActiveOffers(
+            @RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lon,
+            @RequestParam(required = false) Double radius) {
+        log.debug("Getting active offers with proximity - lat: {}, lon: {}, radius: {}", lat, lon, radius);
+        return ResponseEntity.ok(offerService.getActiveOffers(lat, lon, radius));
     }
 
     @GetMapping("/{id}")
