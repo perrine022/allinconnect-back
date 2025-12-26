@@ -89,190 +89,214 @@ public class DataSeeder {
 
             log.info("Seeding database with complete profiles...");
 
-            // --- Subscription Plans ---
-            SubscriptionPlan proMonthly = new SubscriptionPlan(null, "Pro Mensuel", "Plan professionnel mensuel", 9.99, PlanCategory.PROFESSIONAL, PlanDuration.MONTHLY);
-            SubscriptionPlan proAnnual = new SubscriptionPlan(null, "Pro Annuel", "Plan professionnel annuel", 99.0, PlanCategory.PROFESSIONAL, PlanDuration.ANNUAL);
-            SubscriptionPlan clientIndividual = new SubscriptionPlan(null, "Client Individuel", "Plan client individuel", 2.99, PlanCategory.INDIVIDUAL, PlanDuration.MONTHLY);
-            SubscriptionPlan clientIndividualAnnual = new SubscriptionPlan(null, "Client Individuel Annuel", "Plan client individuel annuel", 29.99, PlanCategory.INDIVIDUAL, PlanDuration.ANNUAL);
-            SubscriptionPlan clientFamily = new SubscriptionPlan(null, "Client Famille", "Plan client famille (jusqu'à 4)", 9.99, PlanCategory.FAMILY, PlanDuration.MONTHLY);
-            
-            subscriptionPlanRepository.saveAll(List.of(proMonthly, proAnnual, clientIndividual, clientIndividualAnnual, clientFamily));
+            try {
+                // --- Subscription Plans ---
+                SubscriptionPlan proMonthly = new SubscriptionPlan(null, "Pro Mensuel", "Plan professionnel mensuel", 9.99, PlanCategory.PROFESSIONAL, PlanDuration.MONTHLY);
+                SubscriptionPlan proAnnual = new SubscriptionPlan(null, "Pro Annuel", "Plan professionnel annuel", 99.0, PlanCategory.PROFESSIONAL, PlanDuration.ANNUAL);
+                SubscriptionPlan clientIndividual = new SubscriptionPlan(null, "Client Individuel", "Plan client individuel", 2.99, PlanCategory.INDIVIDUAL, PlanDuration.MONTHLY);
+                SubscriptionPlan clientIndividualAnnual = new SubscriptionPlan(null, "Client Individuel Annuel", "Plan client individuel annuel", 29.99, PlanCategory.INDIVIDUAL, PlanDuration.ANNUAL);
+                SubscriptionPlan clientFamily = new SubscriptionPlan(null, "Client Famille", "Plan client famille (jusqu'à 4)", 9.99, PlanCategory.FAMILY, PlanDuration.MONTHLY);
+                
+                subscriptionPlanRepository.saveAll(List.of(proMonthly, proAnnual, clientIndividual, clientIndividualAnnual, clientFamily));
 
-            // --- Users (Professionals) ---
-            String[] professions = {"Coiffeur", "Boulanger", "Plombier", "Web Designer", "Consultant"};
-            ProfessionCategory[] categories = {ProfessionCategory.BEAUTE_ESTHETIQUE, ProfessionCategory.FOOD_PLAISIRS, ProfessionCategory.SERVICE_PRATIQUES, ProfessionCategory.ENTRE_PROS, ProfessionCategory.SERVICE_PRATIQUES};
-            Double[] lats = {48.8566, 45.7640, 43.2965, 44.8378, 48.1173}; // Paris, Lyon, Marseille, Bordeaux, Rennes
-            Double[] lons = {2.3522, 4.8357, 5.3698, -0.5792, -1.6778};
+                // --- Users (Professionals) ---
+                String[] professions = {"Coiffeur", "Boulanger", "Plombier", "Web Designer", "Consultant"};
+                ProfessionCategory[] categories = {ProfessionCategory.BEAUTE_ESTHETIQUE, ProfessionCategory.FOOD_PLAISIRS, ProfessionCategory.SERVICE_PRATIQUES, ProfessionCategory.ENTRE_PROS, ProfessionCategory.SERVICE_PRATIQUES};
+                Double[] lats = {48.8566, 45.7640, 43.2965, 44.8378, 48.1173}; // Paris, Lyon, Marseille, Bordeaux, Rennes
+                Double[] lons = {2.3522, 4.8357, 5.3698, -0.5792, -1.6778};
 
-            List<User> pros = new ArrayList<>();
-            for (int i = 0; i < professions.length; i++) {
-                String city = (i % 2 == 0) ? "Paris" : "Marseille"; // Alternance Paris / Marseille
-                User pro = User.builder()
-                        .firstName("Pro" + (i + 1))
-                        .lastName("NomPro" + (i + 1))
-                        .email("pro" + (i + 1) + "@example.com")
-                        .password(passwordEncoder.encode("password"))
-                        .address((i + 10) + " Rue de Rivoli")
-                        .city(city)
-                        .latitude(lats[i])
-                        .longitude(lons[i])
-                        .birthDate(LocalDate.now().minusYears(30 + i))
-                        .userType(UserType.PROFESSIONAL)
+                List<User> pros = new ArrayList<>();
+                for (int i = 0; i < professions.length; i++) {
+                    String city = (i % 2 == 0) ? "Paris" : "Marseille"; // Alternance Paris / Marseille
+                    User pro = User.builder()
+                            .firstName("Pro" + (i + 1))
+                            .lastName("NomPro" + (i + 1))
+                            .email("pro" + (i + 1) + "@example.com")
+                            .password(passwordEncoder.encode("password"))
+                            .address((i + 10) + " Rue de Rivoli")
+                            .city(city)
+                            .latitude(lats[i])
+                            .longitude(lons[i])
+                            .birthDate(LocalDate.now().minusYears(30 + i))
+                            .userType(UserType.PROFESSIONAL)
+                            .subscriptionType(SubscriptionType.PREMIUM)
+                            .subscriptionPlan(i % 2 == 0 ? proMonthly : proAnnual)
+                            .profession(professions[i])
+                            .category(categories[i])
+                            .establishmentName("Etablissement " + professions[i])
+                            .establishmentDescription("Description de l'établissement de " + professions[i])
+                            .phoneNumber("010203040" + i)
+                            .website("https://www.pro" + (i + 1) + ".com")
+                            .instagram("@pro" + (i + 1) + "_official")
+                            .openingHours("Lun-Ven 9h-18h")
+                            .hasConnectedBefore(true)
+                            .build();
+                    pro.setReferralCode("PROCODE" + (i + 1));
+                    userRepository.save(pro);
+                    pros.add(pro);
+
+                    // --- Offers and Events for each pro ---
+                    for (int j = 1; j <= 3; j++) {
+                        Offer offer = new Offer();
+                        boolean isEvent = (j == 3); // Le 3ème est un événement
+                        offer.setTitle((isEvent ? "Evénement " : "Offre ") + professions[i] + " " + j);
+                        offer.setDescription("Description détaillée pour " + (isEvent ? "l'événement " : "l'offre ") + j + " du professionnel " + professions[i]);
+                        offer.setPrice(10.0 + random.nextInt(90));
+                        // Dates commençant aujourd'hui pour être visibles immédiatement,
+                        // mais s'étendant bien jusqu'en juin 2026 et au-delà.
+                        offer.setStartDate(LocalDateTime.now().minusDays(1)); 
+                        offer.setEndDate(LocalDateTime.of(2026, 12, 31, 23, 59));
+                        offer.setType(isEvent ? OfferType.EVENEMENT : OfferType.OFFRE);
+                        offer.setFeatured(random.nextBoolean());
+                        offer.setStatus(OfferStatus.ACTIVE);
+                        offer.setProfessional(pro);
+                        offerRepository.save(offer);
+                    }
+                }
+
+                // --- Main Client User (Perrine) ---
+                User perrine = User.builder()
+                        .firstName("Perrine")
+                        .lastName("Honore")
+                        .email("perrine@gmail.com")
+                        .password(passwordEncoder.encode("Perrine"))
+                        .address("10 Rue du Commerce")
+                        .city("Paris")
+                        .latitude(48.8566)
+                        .longitude(2.3522)
+                        .birthDate(LocalDate.of(1995, 5, 20))
+                        .userType(UserType.CLIENT)
                         .subscriptionType(SubscriptionType.PREMIUM)
-                        .subscriptionPlan(i % 2 == 0 ? proMonthly : proAnnual)
-                        .profession(professions[i])
-                        .category(categories[i])
-                        .establishmentName("Etablissement " + professions[i])
-                        .establishmentDescription("Description de l'établissement de " + professions[i])
-                        .phoneNumber("010203040" + i)
-                        .website("https://www.pro" + (i + 1) + ".com")
-                        .instagram("@pro" + (i + 1) + "_official")
-                        .openingHours("Lun-Ven 9h-18h")
+                        .subscriptionPlan(clientFamily)
+                        .subscriptionDate(LocalDateTime.now().minusMonths(1)) // Souscrit il y a 1 mois
                         .hasConnectedBefore(true)
                         .build();
-                pro.setReferralCode("PROCODE" + (i + 1));
-                userRepository.save(pro);
-                pros.add(pro);
+                perrine.setRenewalDate(LocalDateTime.now().plusMonths(11)); // Renouvellement dans 11 mois
+                perrine.setSubscriptionAmount(clientFamily.getPrice());
+                perrine.setReferralCode("PERRINECODE");
+                userRepository.save(perrine);
 
-                // --- Offers and Events for each pro ---
-                for (int j = 1; j <= 3; j++) {
-                    Offer offer = new Offer();
-                    boolean isEvent = (j == 3); // Le 3ème est un événement
-                    offer.setTitle((isEvent ? "Evénement " : "Offre ") + professions[i] + " " + j);
-                    offer.setDescription("Description détaillée pour " + (isEvent ? "l'événement " : "l'offre ") + j + " du professionnel " + professions[i]);
-                    offer.setPrice(10.0 + random.nextInt(90));
-                    // Dates commençant aujourd'hui pour être visibles immédiatement,
-                    // mais s'étendant bien jusqu'en juin 2026 et au-delà.
-                    offer.setStartDate(LocalDateTime.now().minusDays(1)); 
-                    offer.setEndDate(LocalDateTime.of(2026, 12, 31, 23, 59));
-                    offer.setType(isEvent ? OfferType.EVENEMENT : OfferType.OFFRE);
-                    offer.setFeatured(random.nextBoolean());
-                    offer.setStatus(OfferStatus.ACTIVE);
-                    offer.setProfessional(pro);
-                    offerRepository.save(offer);
+                // Add Card to Perrine (Family)
+                Card perrineCard = new Card("FAM-777-888", CardType.CLIENT_FAMILY, perrine);
+                // On déclare les emails qui ont le droit de rejoindre cette carte famille
+                perrineCard.setInvitedEmails(new ArrayList<>(List.of("filleul1@example.com", "filleul2@example.com", "filleul3@example.com")));
+                
+                // Only save card if the invited emails table exists
+                if (cardRepository.checkInvitedEmailsTableExists() > 0) {
+                    cardRepository.save(perrineCard);
+                    perrine.setCard(perrineCard);
+                    userRepository.save(perrine);
+                } else {
+                    log.warn("Table card_invited_emails not found, skipping card seeding for Perrine");
                 }
-            }
 
-            // --- Main Client User (Perrine) ---
-            User perrine = User.builder()
-                    .firstName("Perrine")
-                    .lastName("Honore")
-                    .email("perrine@gmail.com")
-                    .password(passwordEncoder.encode("Perrine"))
-                    .address("10 Rue du Commerce")
-                    .city("Paris")
-                    .latitude(48.8566)
-                    .longitude(2.3522)
-                    .birthDate(LocalDate.of(1995, 5, 20))
-                    .userType(UserType.CLIENT)
-                    .subscriptionType(SubscriptionType.PREMIUM)
-                    .subscriptionPlan(clientFamily)
-                    .subscriptionDate(LocalDateTime.now().minusMonths(1)) // Souscrit il y a 1 mois
-                    .hasConnectedBefore(true)
-                    .build();
-            perrine.setRenewalDate(LocalDateTime.now().plusMonths(11)); // Renouvellement dans 11 mois
-            perrine.setSubscriptionAmount(clientFamily.getPrice());
-            perrine.setReferralCode("PERRINECODE");
-            userRepository.save(perrine);
-
-            // Add Card to Perrine (Family)
-            Card perrineCard = new Card("FAM-777-888", CardType.CLIENT_FAMILY, perrine);
-            // On déclare les emails qui ont le droit de rejoindre cette carte famille
-            perrineCard.setInvitedEmails(new ArrayList<>(List.of("filleul1@example.com", "filleul2@example.com", "filleul3@example.com")));
-            cardRepository.save(perrineCard);
-            perrine.setCard(perrineCard);
-            userRepository.save(perrine);
-
-            // --- Secondary Client User (Jean Dupont) ---
-            User jean = User.builder()
-                    .firstName("Jean")
-                    .lastName("Dupont")
-                    .email("jean.dupont@example.com")
-                    .password(passwordEncoder.encode("password"))
-                    .address("123 Rue de la Paix")
-                    .city("Paris")
-                    .latitude(48.8566)
-                    .longitude(2.3522)
-                    .birthDate(LocalDate.of(1990, 1, 1))
-                    .userType(UserType.CLIENT)
-                    .subscriptionType(SubscriptionType.PREMIUM)
-                    .subscriptionPlan(clientIndividual)
-                    .subscriptionDate(LocalDateTime.now().minusDays(15)) // Souscrit il y a 15 jours
-                    .hasConnectedBefore(true)
-                    .build();
-            jean.setRenewalDate(LocalDateTime.now().plusDays(15)); // Renouvellement dans 15 jours
-            jean.setSubscriptionAmount(clientIndividual.getPrice());
-            jean.setReferralCode("JEANCODE");
-            userRepository.save(jean);
-
-            // Add Card to Jean (Individual)
-            Card jeanCard = new Card("IND-123-456", CardType.CLIENT_INDIVIDUAL, jean);
-            cardRepository.save(jeanCard);
-            jean.setCard(jeanCard);
-            userRepository.save(jean);
-
-            // Add Payments for Jean
-            Payment p1 = new Payment();
-            p1.setAmount(2.99);
-            p1.setPaymentDate(LocalDateTime.now().minusMonths(1));
-            p1.setUser(jean);
-            
-            Payment p2 = new Payment();
-            p2.setAmount(2.99);
-            p2.setPaymentDate(LocalDateTime.now().minusDays(15));
-            p2.setUser(jean);
-            
-            paymentRepository.saveAll(List.of(p1, p2));
-            jean.setPayments(new ArrayList<>(List.of(p1, p2)));
-            userRepository.save(jean);
-
-            // --- Add Card to Professionals too ---
-            for (int i = 0; i < pros.size(); i++) {
-                User pro = pros.get(i);
-                Card proCard = new Card("PRO-CARD-" + (i + 1), CardType.PROFESSIONAL, pro);
-                cardRepository.save(proCard);
-                pro.setCard(proCard);
-                // On met aussi une date de souscription pour les pros
-                pro.setSubscriptionDate(LocalDateTime.now().minusMonths(6));
-                pro.setSubscriptionAmount(pro.getSubscriptionPlan().getPrice());
-                userRepository.save(pro);
-            }
-
-            // Add Favorites for Jean
-            jean.setFavorites(new ArrayList<>(List.of(pros.get(0), pros.get(2))));
-            userRepository.save(jean);
-
-            // Add Referrals (Filleuls) et membres de la famille de Perrine
-            for (int i = 1; i <= 3; i++) {
-                String email = "filleul" + i + "@example.com";
-                User referral = User.builder()
-                        .firstName("Filleul" + i)
-                        .lastName("Nom" + i)
-                        .email(email)
+                // --- Secondary Client User (Jean Dupont) ---
+                User jean = User.builder()
+                        .firstName("Jean")
+                        .lastName("Dupont")
+                        .email("jean.dupont@example.com")
                         .password(passwordEncoder.encode("password"))
+                        .address("123 Rue de la Paix")
+                        .city("Paris")
+                        .latitude(48.8566)
+                        .longitude(2.3522)
+                        .birthDate(LocalDate.of(1990, 1, 1))
                         .userType(UserType.CLIENT)
-                        .hasConnectedBefore(false)
+                        .subscriptionType(SubscriptionType.PREMIUM)
+                        .subscriptionPlan(clientIndividual)
+                        .subscriptionDate(LocalDateTime.now().minusDays(15)) // Souscrit il y a 15 jours
+                        .hasConnectedBefore(true)
                         .build();
-                
-                // Jean est le parrain
-                referral.setReferrer(jean);
-                
-                // Ils sont TOUS rattachés à la carte famille de Perrine (car leurs emails sont dans perrineCard.invitedEmails)
-                referral.setCard(perrineCard);
-                referral.setSubscriptionPlan(perrine.getSubscriptionPlan());
-                referral.setSubscriptionType(SubscriptionType.PREMIUM);
-                referral.setSubscriptionDate(LocalDateTime.now());
-                
-                userRepository.save(referral);
-                
-                // On les ajoute aussi à la liste des membres de la carte pour la cohérence bidirectionnelle
-                perrineCard.getMembers().add(referral);
-            }
-            cardRepository.save(perrineCard);
-            
-            userRepository.save(jean);
+                jean.setRenewalDate(LocalDateTime.now().plusDays(15)); // Renouvellement dans 15 jours
+                jean.setSubscriptionAmount(clientIndividual.getPrice());
+                jean.setReferralCode("JEANCODE");
+                userRepository.save(jean);
 
-            log.info("Seeding completed successfully with Jean Dupont as main client");
+                // Add Card to Jean (Individual)
+                if (cardRepository.checkCardsTableExists() > 0) {
+                    Card jeanCard = new Card("IND-123-456", CardType.CLIENT_INDIVIDUAL, jean);
+                    cardRepository.save(jeanCard);
+                    jean.setCard(jeanCard);
+                    userRepository.save(jean);
+                }
+
+                // Add Payments for Jean
+                Payment p1 = new Payment();
+                p1.setAmount(2.99);
+                p1.setPaymentDate(LocalDateTime.now().minusMonths(1));
+                p1.setUser(jean);
+                
+                Payment p2 = new Payment();
+                p2.setAmount(2.99);
+                p2.setPaymentDate(LocalDateTime.now().minusDays(15));
+                p2.setUser(jean);
+                
+                paymentRepository.saveAll(List.of(p1, p2));
+                jean.setPayments(new ArrayList<>(List.of(p1, p2)));
+                userRepository.save(jean);
+
+                // --- Add Card to Professionals too ---
+                if (cardRepository.checkCardsTableExists() > 0) {
+                    for (int i = 0; i < pros.size(); i++) {
+                        User pro = pros.get(i);
+                        Card proCard = new Card("PRO-CARD-" + (i + 1), CardType.PROFESSIONAL, pro);
+                        cardRepository.save(proCard);
+                        pro.setCard(proCard);
+                        // On met aussi une date de souscription pour les pros
+                        pro.setSubscriptionDate(LocalDateTime.now().minusMonths(6));
+                        pro.setSubscriptionAmount(pro.getSubscriptionPlan().getPrice());
+                        userRepository.save(pro);
+                    }
+                }
+
+                // Add Favorites for Jean
+                if (cardRepository.checkUserFavoritesTableExists() > 0) {
+                    jean.setFavorites(new ArrayList<>(List.of(pros.get(0), pros.get(2))));
+                    userRepository.save(jean);
+                } else {
+                    log.warn("Table user_favorites not found, skipping favorites seeding");
+                }
+
+                // Add Referrals (Filleuls) et membres de la famille de Perrine
+                for (int i = 1; i <= 3; i++) {
+                    String email = "filleul" + i + "@example.com";
+                    User referral = User.builder()
+                            .firstName("Filleul" + i)
+                            .lastName("Nom" + i)
+                            .email(email)
+                            .password(passwordEncoder.encode("password"))
+                            .userType(UserType.CLIENT)
+                            .hasConnectedBefore(false)
+                            .build();
+                    
+                    // Jean est le parrain
+                    referral.setReferrer(jean);
+                    
+                    // Ils sont TOUS rattachés à la carte famille de Perrine (car leurs emails sont dans perrineCard.invitedEmails)
+                    if (perrineCard.getId() != null) {
+                        referral.setCard(perrineCard);
+                        referral.setSubscriptionPlan(perrine.getSubscriptionPlan());
+                        referral.setSubscriptionType(SubscriptionType.PREMIUM);
+                        referral.setSubscriptionDate(LocalDateTime.now());
+                        
+                        userRepository.save(referral);
+                        
+                        // On les ajoute aussi à la liste des membres de la carte pour la cohérence bidirectionnelle
+                        perrineCard.getMembers().add(referral);
+                    } else {
+                        userRepository.save(referral);
+                    }
+                }
+                if (perrineCard.getId() != null) {
+                    cardRepository.save(perrineCard);
+                }
+                
+                userRepository.save(jean);
+
+                log.info("Seeding completed successfully with Jean Dupont as main client");
+            } catch (Exception e) {
+                log.error("Failed to seed database: {}", e.getMessage(), e);
+            }
         };
     }
 }

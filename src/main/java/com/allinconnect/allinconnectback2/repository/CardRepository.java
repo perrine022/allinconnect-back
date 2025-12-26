@@ -36,18 +36,18 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     void fixCardTypeColumn();
 
     @Transactional
-    @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'user_favorites'", nativeQuery = true)
+    @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'allinconnect' AND table_name = 'user_favorites'", nativeQuery = true)
     long checkUserFavoritesTableExists();
 
     @Transactional
-    @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'card_invited_emails'", nativeQuery = true)
+    @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'allinconnect' AND table_name = 'card_invited_emails'", nativeQuery = true)
     long checkInvitedEmailsTableExists();
 
     @Transactional
-    @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'cards'", nativeQuery = true)
+    @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'allinconnect' AND table_name = 'cards'", nativeQuery = true)
     long checkCardsTableExists();
 
     @Transactional
-    @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'users'", nativeQuery = true)
+    @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'allinconnect' AND table_name = 'users'", nativeQuery = true)
     long checkUsersTableExists();
 }
