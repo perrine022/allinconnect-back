@@ -1,10 +1,6 @@
 package com.allinconnect.allinconnectback2.config;
 
-import com.allinconnect.allinconnectback2.entity.Card;
-import com.allinconnect.allinconnectback2.entity.Offer;
-import com.allinconnect.allinconnectback2.entity.Payment;
-import com.allinconnect.allinconnectback2.entity.SubscriptionPlan;
-import com.allinconnect.allinconnectback2.entity.User;
+import com.allinconnect.allinconnectback2.entity.*;
 import com.allinconnect.allinconnectback2.model.*;
 import com.allinconnect.allinconnectback2.repository.*;
 import org.slf4j.Logger;
@@ -37,6 +33,8 @@ public class DataSeeder {
             RatingRepository ratingRepository,
             DeviceTokenRepository deviceTokenRepository,
             MonthlyStatRepository monthlyStatRepository,
+            WalletHistoryRepository walletHistoryRepository,
+            WalletRequestRepository walletRequestRepository,
             PasswordEncoder passwordEncoder
     ) {
         return args -> {
@@ -70,6 +68,8 @@ public class DataSeeder {
 
             // 1. Clear tables with foreign keys to Users or Cards
             try {
+                walletRequestRepository.deleteAll();
+                walletHistoryRepository.deleteAll();
                 deviceTokenRepository.deleteAll();
                 ratingRepository.deleteAll();
                 savingRepository.deleteAll();
@@ -230,6 +230,28 @@ public class DataSeeder {
                 jean.setReferralCode("JEANCODE");
                 userRepository.save(jean);
 
+                // --- Third Client User (Marc Durand) ---
+                User marc = User.builder()
+                        .firstName("Marc")
+                        .lastName("Durand")
+                        .email("marc.durand@example.com")
+                        .password(passwordEncoder.encode("password"))
+                        .address("12 Rue Masséna")
+                        .city("Nice")
+                        .latitude(43.6995)
+                        .longitude(7.2662)
+                        .birthDate(LocalDate.of(1985, 3, 12))
+                        .userType(UserType.CLIENT)
+                        .subscriptionType(SubscriptionType.PREMIUM)
+                        .subscriptionPlan(clientIndividual)
+                        .subscriptionDate(LocalDateTime.now().minusMonths(2))
+                        .hasConnectedBefore(true)
+                        .build();
+                marc.setRenewalDate(LocalDateTime.now().plusMonths(10));
+                marc.setSubscriptionAmount(clientIndividual.getPrice());
+                marc.setReferralCode("MARCCODE");
+                userRepository.save(marc);
+
                 // Add Card to Jean (Individual)
                 if (cardRepository.checkCardsTableExists() > 0) {
                     Card jeanCard = new Card("IND-123-456", CardType.CLIENT_INDIVIDUAL, jean);
@@ -310,8 +332,50 @@ public class DataSeeder {
                 }
                 
                 userRepository.save(jean);
+                userRepository.save(marc);
 
-                log.info("Seeding completed successfully with Jean Dupont as main client");
+                // --- Cagnotte et Filleuls ---
+                log.info("Seeding wallets and referrals...");
+                
+                // Perrine parraine 2 personnes
+                User f1Perrine = User.builder().firstName("Alice").lastName("Bernard").email("alice@example.com").password(passwordEncoder.encode("password")).userType(UserType.CLIENT).referrer(perrine).build();
+                User f2Perrine = User.builder().firstName("Bob").lastName("Carre").email("bob@example.com").password(passwordEncoder.encode("password")).userType(UserType.CLIENT).referrer(perrine).build();
+                userRepository.saveAll(List.of(f1Perrine, f2Perrine));
+                
+                perrine.setWalletBalance(10.0);
+                walletHistoryRepository.save(new WalletHistory(5.0, "Gain parrainage de Alice Bernard", perrine));
+                walletHistoryRepository.save(new WalletHistory(5.0, "Gain parrainage de Bob Carre", perrine));
+                userRepository.save(perrine);
+
+                // Jean parraine 1 personne
+                User f1Jean = User.builder().firstName("Charlie").lastName("Dubois").email("charlie@example.com").password(passwordEncoder.encode("password")).userType(UserType.CLIENT).referrer(jean).build();
+                userRepository.save(f1Jean);
+                
+                jean.setWalletBalance(5.0);
+                walletHistoryRepository.save(new WalletHistory(5.0, "Gain parrainage de Charlie Dubois", jean));
+                userRepository.save(jean);
+
+                // Marc parraine 3 personnes
+                User f1Marc = User.builder().firstName("David").lastName("Etienne").email("david@example.com").password(passwordEncoder.encode("password")).userType(UserType.CLIENT).referrer(marc).build();
+                User f2Marc = User.builder().firstName("Eve").lastName("Fontaine").email("eve@example.com").password(passwordEncoder.encode("password")).userType(UserType.CLIENT).referrer(marc).build();
+                User f3Marc = User.builder().firstName("Franck").lastName("Gerard").email("franck@example.com").password(passwordEncoder.encode("password")).userType(UserType.CLIENT).referrer(marc).build();
+                userRepository.saveAll(List.of(f1Marc, f2Marc, f3Marc));
+                
+                marc.setWalletBalance(15.0);
+                walletHistoryRepository.save(new WalletHistory(5.0, "Gain parrainage de David Etienne", marc));
+                walletHistoryRepository.save(new WalletHistory(5.0, "Gain parrainage de Eve Fontaine", marc));
+                walletHistoryRepository.save(new WalletHistory(5.0, "Gain parrainage de Franck Gerard", marc));
+                userRepository.save(marc);
+
+                // Ajouter une demande d'utilisation pour Perrine
+                WalletRequest wrPerrine = new WalletRequest();
+                wrPerrine.setTotalAmount(3.0);
+                wrPerrine.setProfessionals("Pro 1: 3€");
+                wrPerrine.setUser(perrine);
+                wrPerrine.setStatus(WalletRequestStatus.PENDING);
+                walletRequestRepository.save(wrPerrine);
+
+                log.info("Seeding completed successfully");
             } catch (Exception e) {
                 log.error("Failed to seed database: {}", e.getMessage(), e);
             }

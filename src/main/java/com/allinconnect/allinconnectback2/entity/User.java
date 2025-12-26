@@ -191,6 +191,7 @@ public class User implements UserDetails {
         private String instagram;
         private String openingHours;
         private Card card;
+        private User referrer;
 
         public UserBuilder id(Long id) { this.id = id; return this; }
         public UserBuilder email(String email) { this.email = email; return this; }
@@ -216,6 +217,7 @@ public class User implements UserDetails {
         public UserBuilder instagram(String instagram) { this.instagram = instagram; return this; }
         public UserBuilder openingHours(String openingHours) { this.openingHours = openingHours; return this; }
         public UserBuilder card(Card card) { this.card = card; return this; }
+        public UserBuilder referrer(User referrer) { this.referrer = referrer; return this; }
 
         public User build() {
             User user = new User(id, email, password, firstName, lastName, address, city, latitude, longitude, birthDate, userType, hasConnectedBefore, subscriptionType, subscriptionPlan, subscriptionDate, profession, category, card);
@@ -225,6 +227,7 @@ public class User implements UserDetails {
             user.setWebsite(website);
             user.setInstagram(instagram);
             user.setOpeningHours(openingHours);
+            user.setReferrer(referrer);
             return user;
         }
     }
