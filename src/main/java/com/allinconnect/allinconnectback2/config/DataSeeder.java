@@ -40,6 +40,11 @@ public class DataSeeder {
             PasswordEncoder passwordEncoder
     ) {
         return args -> {
+            if (userRepository.count() > 0) {
+                log.info("Database already seeded. Skipping initialization.");
+                return;
+            }
+
             log.info("Forcing database re-seed: Clearing all tables...");
             
             // 0. Break foreign key links using native SQL before clearing anything
