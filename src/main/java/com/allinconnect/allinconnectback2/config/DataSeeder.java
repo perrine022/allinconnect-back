@@ -47,6 +47,9 @@ public class DataSeeder {
                 if (cardRepository.checkUsersTableExists() > 0) {
                     cardRepository.unlinkCardsFromUsers();
                 }
+                if (cardRepository.checkUserFavoritesTableExists() > 0) {
+                    cardRepository.truncateUserFavorites();
+                }
                 if (cardRepository.checkCardsTableExists() > 0) {
                     cardRepository.fixCardTypeColumn();
                 }

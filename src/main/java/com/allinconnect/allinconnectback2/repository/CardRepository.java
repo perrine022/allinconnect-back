@@ -17,6 +17,11 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
     @Modifying
     @Transactional
+    @Query(value = "DELETE FROM user_favorites", nativeQuery = true)
+    void truncateUserFavorites();
+
+    @Modifying
+    @Transactional
     @Query(value = "UPDATE users SET card_id = NULL", nativeQuery = true)
     void unlinkCardsFromUsers();
 
