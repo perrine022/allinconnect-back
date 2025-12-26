@@ -60,19 +60,20 @@ public class UserService {
         
         List<User> professionals = findAllProfessionals();
 
-        return professionals.stream()
+        List<User> filtered = professionals.stream()
                 .filter(pro -> {
-                    // Filter by city (exact match)
-                    if (city != null && !city.equalsIgnoreCase(pro.getCity())) return false;
+                    // Filter by city (Case-Insensitive)
+                    if (city != null && pro.getCity() != null && !city.equalsIgnoreCase(pro.getCity())) return false;
                     
                     // Filter by category
                     if (category != null && pro.getCategory() != category) return false;
                     
-                    // Filter by name (firstName or lastName)
+                    // Filter by name (firstName, lastName or establishmentName)
                     if (name != null) {
                         String lowerName = name.toLowerCase();
                         boolean match = (pro.getFirstName() != null && pro.getFirstName().toLowerCase().contains(lowerName)) ||
-                                        (pro.getLastName() != null && pro.getLastName().toLowerCase().contains(lowerName));
+                                        (pro.getLastName() != null && pro.getLastName().toLowerCase().contains(lowerName)) ||
+                                        (pro.getEstablishmentName() != null && pro.getEstablishmentName().toLowerCase().contains(lowerName));
                         if (!match) return false;
                     }
                     
@@ -85,6 +86,14 @@ public class UserService {
                     return true;
                 })
                 .toList();
+
+        // If no professionals found with filters (like radius too far), return all professionals
+        if (filtered.isEmpty()) {
+            log.info("No professionals found with current filters, returning all professionals as fallback");
+            return professionals;
+        }
+
+        return filtered;
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {

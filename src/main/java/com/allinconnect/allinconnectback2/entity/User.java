@@ -105,13 +105,13 @@ public class User implements UserDetails {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Saving> savings = new ArrayList<>();
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_favorites",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "favorite_id")
     )
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"favorites", "referrals", "payments", "offers"})
     private List<User> favorites;
 
     @ManyToOne

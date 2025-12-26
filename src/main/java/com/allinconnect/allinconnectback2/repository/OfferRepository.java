@@ -16,7 +16,7 @@ public interface OfferRepository extends JpaRepository<Offer, Long> {
     List<Offer> findByProfessionalId(Long professionalId);
 
     @Query("SELECT o FROM Offer o WHERE " +
-           "(:city IS NULL OR o.professional.city = :city) AND " +
+           "(:city IS NULL OR LOWER(o.professional.city) = LOWER(:city)) AND " +
            "(:category IS NULL OR o.professional.category = :category) AND " +
            "(:professionalId IS NULL OR o.professional.id = :professionalId) AND " +
            "(:type IS NULL OR o.type = :type) AND " +
