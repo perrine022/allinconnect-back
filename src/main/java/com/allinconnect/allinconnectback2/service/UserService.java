@@ -77,8 +77,8 @@ public class UserService {
                         if (!match) return false;
                     }
                     
-                    // Filter by radius (if coordinates and radius are provided)
-                    if (lat != null && lon != null && radius != null && pro.getLatitude() != null && pro.getLongitude() != null) {
+                    // Filter by radius (ONLY if city is provided AND coordinates/radius are provided)
+                    if (city != null && lat != null && lon != null && radius != null && pro.getLatitude() != null && pro.getLongitude() != null) {
                         double distance = calculateDistance(lat, lon, pro.getLatitude(), pro.getLongitude());
                         if (distance > radius) return false;
                     }
