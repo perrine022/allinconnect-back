@@ -33,13 +33,35 @@ public class DataSeeder {
             SubscriptionPlanRepository subscriptionPlanRepository,
             CardRepository cardRepository,
             PaymentRepository paymentRepository,
+            SavingRepository savingRepository,
+            RatingRepository ratingRepository,
+            DeviceTokenRepository deviceTokenRepository,
+            MonthlyStatRepository monthlyStatRepository,
             PasswordEncoder passwordEncoder
     ) {
         return args -> {
-            if (userRepository.count() > 0) {
-                log.info("Database already seeded");
-                return;
-            }
+            log.info("Forcing database re-seed: Clearing all tables...");
+            
+            // 1. Clear tables with foreign keys to Users or Cards
+            deviceTokenRepository.deleteAll();
+            ratingRepository.deleteAll();
+            savingRepository.deleteAll();
+            paymentRepository.deleteAll();
+            offerRepository.deleteAll();
+            monthlyStatRepository.deleteAll();
+            
+            // 2. Break circular relationships
+            userRepository.findAll().forEach(u -> {
+                u.setFavorites(new ArrayList<>());
+                u.setReferrer(null);
+                u.setCard(null); // IMPORTANT: Unlink card before deleting it
+                userRepository.save(u);
+            });
+            
+            // 3. Clear the rest
+            cardRepository.deleteAll();
+            userRepository.deleteAll();
+            subscriptionPlanRepository.deleteAll();
 
             log.info("Seeding database with complete profiles...");
 
@@ -94,8 +116,9 @@ public class DataSeeder {
                     offer.setTitle((isEvent ? "Evénement " : "Offre ") + professions[i] + " " + j);
                     offer.setDescription("Description détaillée pour " + (isEvent ? "l'événement " : "l'offre ") + j + " du professionnel " + professions[i]);
                     offer.setPrice(10.0 + random.nextInt(90));
-                    offer.setStartDate(LocalDateTime.now());
-                    offer.setEndDate(LocalDateTime.now().plusMonths(1));
+                    // Dates en juin 2026
+                    offer.setStartDate(LocalDateTime.of(2026, 6, 1, 9, 0).plusDays(j * 2L));
+                    offer.setEndDate(offer.getStartDate().plusMonths(1));
                     offer.setType(isEvent ? OfferType.EVENEMENT : OfferType.OFFRE);
                     offer.setFeatured(random.nextBoolean());
                     offer.setStatus(OfferStatus.ACTIVE);
@@ -118,22 +141,24 @@ public class DataSeeder {
                     .userType(UserType.CLIENT)
                     .subscriptionType(SubscriptionType.PREMIUM)
                     .subscriptionPlan(clientFamily)
-                    .subscriptionDate(LocalDateTime.now().minusMonths(1))
+                    .subscriptionDate(LocalDateTime.now().minusMonths(1)) // Souscrit il y a 1 mois
                     .hasConnectedBefore(true)
                     .build();
-            perrine.setRenewalDate(LocalDateTime.now().plusDays(20));
+            perrine.setRenewalDate(LocalDateTime.now().plusMonths(11)); // Renouvellement dans 11 mois
             perrine.setSubscriptionAmount(clientFamily.getPrice());
             perrine.setReferralCode("PERRINECODE");
             userRepository.save(perrine);
 
             // Add Card to Perrine (Family)
             Card perrineCard = new Card("FAM-777-888", CardType.FAMILY, perrine);
+            // On déclare les emails qui ont le droit de rejoindre cette carte famille
+            perrineCard.setInvitedEmails(new ArrayList<>(List.of("filleul1@example.com", "filleul2@example.com", "filleul3@example.com")));
             cardRepository.save(perrineCard);
             perrine.setCard(perrineCard);
             userRepository.save(perrine);
 
             // --- Secondary Client User (Jean Dupont) ---
-            User mainClient = User.builder()
+            User jean = User.builder()
                     .firstName("Jean")
                     .lastName("Dupont")
                     .email("jean.dupont@example.com")
@@ -146,51 +171,80 @@ public class DataSeeder {
                     .userType(UserType.CLIENT)
                     .subscriptionType(SubscriptionType.PREMIUM)
                     .subscriptionPlan(clientIndividual)
-                    .subscriptionDate(LocalDateTime.now().minusMonths(2))
+                    .subscriptionDate(LocalDateTime.now().minusDays(15)) // Souscrit il y a 15 jours
                     .hasConnectedBefore(true)
                     .build();
-            mainClient.setRenewalDate(LocalDateTime.now().plusDays(10));
-            mainClient.setSubscriptionAmount(clientIndividual.getPrice());
-            mainClient.setReferralCode("JEANCODE");
-            userRepository.save(mainClient);
+            jean.setRenewalDate(LocalDateTime.now().plusDays(15)); // Renouvellement dans 15 jours
+            jean.setSubscriptionAmount(clientIndividual.getPrice());
+            jean.setReferralCode("JEANCODE");
+            userRepository.save(jean);
+
+            // Add Card to Jean (Individual)
+            Card jeanCard = new Card("IND-123-456", CardType.INDIVIDUAL, jean);
+            cardRepository.save(jeanCard);
+            jean.setCard(jeanCard);
+            userRepository.save(jean);
 
             // Add Payments for Jean
             Payment p1 = new Payment();
             p1.setAmount(2.99);
-            p1.setPaymentDate(LocalDateTime.now().minusMonths(2));
-            p1.setUser(mainClient);
+            p1.setPaymentDate(LocalDateTime.now().minusMonths(1));
+            p1.setUser(jean);
             
             Payment p2 = new Payment();
             p2.setAmount(2.99);
-            p2.setPaymentDate(LocalDateTime.now().minusMonths(1));
-            p2.setUser(mainClient);
+            p2.setPaymentDate(LocalDateTime.now().minusDays(15));
+            p2.setUser(jean);
             
             paymentRepository.saveAll(List.of(p1, p2));
-            mainClient.setPayments(new ArrayList<>(List.of(p1, p2)));
+            jean.setPayments(new ArrayList<>(List.of(p1, p2)));
+            userRepository.save(jean);
 
-            // Add Card to Main Client
-            Card mainCard = new Card("CARD-888-999", CardType.INDIVIDUAL, mainClient);
-            cardRepository.save(mainCard);
-            mainClient.setCard(mainCard);
+            // --- Add Card to Professionals too ---
+            for (int i = 0; i < pros.size(); i++) {
+                User pro = pros.get(i);
+                Card proCard = new Card("PRO-CARD-" + (i + 1), CardType.INDIVIDUAL, pro);
+                cardRepository.save(proCard);
+                pro.setCard(proCard);
+                // On met aussi une date de souscription pour les pros
+                pro.setSubscriptionDate(LocalDateTime.now().minusMonths(6));
+                pro.setSubscriptionAmount(pro.getSubscriptionPlan().getPrice());
+                userRepository.save(pro);
+            }
 
-            // Add Favorites (Pros)
-            mainClient.setFavorites(new ArrayList<>(List.of(pros.get(0), pros.get(2))));
+            // Add Favorites for Jean
+            jean.setFavorites(new ArrayList<>(List.of(pros.get(0), pros.get(2))));
+            userRepository.save(jean);
 
-            // Add Referrals (Filleuls)
+            // Add Referrals (Filleuls) et membres de la famille de Perrine
             for (int i = 1; i <= 3; i++) {
+                String email = "filleul" + i + "@example.com";
                 User referral = User.builder()
                         .firstName("Filleul" + i)
                         .lastName("Nom" + i)
-                        .email("filleul" + i + "@example.com")
+                        .email(email)
                         .password(passwordEncoder.encode("password"))
                         .userType(UserType.CLIENT)
                         .hasConnectedBefore(false)
                         .build();
-                referral.setReferrer(mainClient);
+                
+                // Jean est le parrain
+                referral.setReferrer(jean);
+                
+                // Ils sont TOUS rattachés à la carte famille de Perrine (car leurs emails sont dans perrineCard.invitedEmails)
+                referral.setCard(perrineCard);
+                referral.setSubscriptionPlan(perrine.getSubscriptionPlan());
+                referral.setSubscriptionType(SubscriptionType.PREMIUM);
+                referral.setSubscriptionDate(LocalDateTime.now());
+                
                 userRepository.save(referral);
+                
+                // On les ajoute aussi à la liste des membres de la carte pour la cohérence bidirectionnelle
+                perrineCard.getMembers().add(referral);
             }
+            cardRepository.save(perrineCard);
             
-            userRepository.save(mainClient);
+            userRepository.save(jean);
 
             log.info("Seeding completed successfully with Jean Dupont as main client");
         };

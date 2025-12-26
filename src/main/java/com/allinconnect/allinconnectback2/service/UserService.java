@@ -29,6 +29,7 @@ public class UserService {
 
     private User ensureUser(User user) {
         if (user != null) return user;
+        log.warn("AuthenticationPrincipal is null! Using fallback user (only for debug)");
         return userRepository.findAll().stream()
                 .filter(u -> u.getUserType() == UserType.CLIENT)
                 .findFirst()

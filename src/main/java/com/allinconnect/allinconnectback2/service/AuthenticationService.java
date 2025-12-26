@@ -152,12 +152,17 @@ public class AuthenticationService {
 
     public AuthResponse authenticate(LoginRequest request) {
         log.debug("Service: Authenticating user {}", request.getEmail());
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (Exception e) {
+            log.error("Authentication failed for user {}: {}", request.getEmail(), e.getMessage());
+            throw e;
+        }
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
         
