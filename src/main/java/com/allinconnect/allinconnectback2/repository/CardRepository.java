@@ -55,15 +55,4 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     @Transactional
     @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'allinconnect' AND table_name = 'users'", nativeQuery = true)
     long checkUsersTableExists();
-
-    @Modifying
-    @Transactional
-    @Query(value = "CREATE TABLE IF NOT EXISTS user_favorites (" +
-            "user_id BIGINT NOT NULL, " +
-            "favorite_id BIGINT NOT NULL, " +
-            "PRIMARY KEY (user_id, favorite_id), " +
-            "CONSTRAINT FK_user_favorites_user FOREIGN KEY (user_id) REFERENCES users (id), " +
-            "CONSTRAINT FK_user_favorites_favorite FOREIGN KEY (favorite_id) REFERENCES users (id)" +
-            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci", nativeQuery = true)
-    void forceCreateUserFavoritesTable();
 }

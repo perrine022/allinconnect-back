@@ -50,7 +50,6 @@ public class DataSeeder {
             // 0. Break foreign key links using native SQL before clearing anything
             try {
                 if (cardRepository.checkUsersTableExists() > 0) {
-                    cardRepository.forceCreateUserFavoritesTable();
                     cardRepository.unlinkCardsFromUsers();
                 }
                 if (cardRepository.checkUserFavoritesTableExists() > 0) {
