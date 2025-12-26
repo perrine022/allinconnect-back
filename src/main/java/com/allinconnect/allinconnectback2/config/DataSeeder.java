@@ -43,10 +43,22 @@ public class DataSeeder {
             log.info("Forcing database re-seed: Clearing all tables...");
             
             // 0. Break foreign key links using native SQL before clearing anything
-            cardRepository.unlinkCardsFromUsers();
-            cardRepository.fixCardTypeColumn();
-            cardRepository.truncateInvitedEmails();
-            cardRepository.truncateCards();
+            try {
+                if (cardRepository.checkUsersTableExists() > 0) {
+                    cardRepository.unlinkCardsFromUsers();
+                }
+                if (cardRepository.checkCardsTableExists() > 0) {
+                    cardRepository.fixCardTypeColumn();
+                }
+                if (cardRepository.checkInvitedEmailsTableExists() > 0) {
+                    cardRepository.truncateInvitedEmails();
+                }
+                if (cardRepository.checkCardsTableExists() > 0) {
+                    cardRepository.truncateCards();
+                }
+            } catch (Exception e) {
+                log.warn("Could not perform native SQL cleanup: {}", e.getMessage());
+            }
 
             // 1. Clear tables with foreign keys to Users or Cards
             deviceTokenRepository.deleteAll();
@@ -57,11 +69,15 @@ public class DataSeeder {
             monthlyStatRepository.deleteAll();
             
             // 2. Break other circular relationships (referral, favorites, members)
-            userRepository.findAll().forEach(u -> {
-                u.setFavorites(new ArrayList<>());
-                u.setReferrer(null);
-                userRepository.save(u);
-            });
+            try {
+                userRepository.findAll().forEach(u -> {
+                    u.setFavorites(new ArrayList<>());
+                    u.setReferrer(null);
+                    userRepository.save(u);
+                });
+            } catch (Exception e) {
+                log.warn("Could not clear user relationships: {}", e.getMessage());
+            }
             
             // 2.5 Clear the user-card members join table if it exists
             // This table is managed by @OneToMany mappedBy="card" in Card, so it's usually just card_id in users table.

@@ -34,4 +34,20 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     @Transactional
     @Query(value = "ALTER TABLE cards MODIFY COLUMN type VARCHAR(50)", nativeQuery = true)
     void fixCardTypeColumn();
+
+    @Transactional
+    @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'user_favorites'", nativeQuery = true)
+    long checkUserFavoritesTableExists();
+
+    @Transactional
+    @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'card_invited_emails'", nativeQuery = true)
+    long checkInvitedEmailsTableExists();
+
+    @Transactional
+    @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'cards'", nativeQuery = true)
+    long checkCardsTableExists();
+
+    @Transactional
+    @Query(value = "SELECT count(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'users'", nativeQuery = true)
+    long checkUsersTableExists();
 }
