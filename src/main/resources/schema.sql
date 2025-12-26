@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS cards (
     type VARCHAR(50),
     owner_id BIGINT,
     PRIMARY KEY (id),
-    UNIQUE (card_number)
+    UNIQUE (card_number),
+    CONSTRAINT FK_cards_owner FOREIGN KEY (owner_id) REFERENCES users (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS users (
@@ -52,10 +53,9 @@ CREATE TABLE IF NOT EXISTS users (
     PRIMARY KEY (id),
     UNIQUE (email),
     CONSTRAINT FK_users_subscription_plan FOREIGN KEY (subscription_plan_id) REFERENCES subscription_plans (id),
-    CONSTRAINT FK_users_card FOREIGN KEY (card_id) REFERENCES cards (id)
+    CONSTRAINT FK_users_card FOREIGN KEY (card_id) REFERENCES cards (id),
+    CONSTRAINT FK_users_referrer FOREIGN KEY (referrer_id) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-ALTER TABLE users ADD CONSTRAINT FK_users_referrer FOREIGN KEY (referrer_id) REFERENCES users (id) ON DELETE SET NULL;
 
 CREATE TABLE IF NOT EXISTS user_favorites (
     user_id BIGINT NOT NULL,
@@ -116,8 +116,6 @@ CREATE TABLE IF NOT EXISTS card_invited_emails (
     PRIMARY KEY (card_id, email),
     CONSTRAINT FK_card_invited_emails_card FOREIGN KEY (card_id) REFERENCES cards (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-ALTER TABLE cards ADD CONSTRAINT FK_cards_owner FOREIGN KEY (owner_id) REFERENCES users (id);
 
 CREATE TABLE IF NOT EXISTS offers (
     id BIGINT NOT NULL AUTO_INCREMENT,
