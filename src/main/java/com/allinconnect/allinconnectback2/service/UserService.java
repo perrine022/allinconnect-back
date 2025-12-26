@@ -155,6 +155,7 @@ public class UserService {
         if (details.getEstablishmentDescription() != null) user.setEstablishmentDescription(details.getEstablishmentDescription());
         if (details.getPhoneNumber() != null) user.setPhoneNumber(details.getPhoneNumber());
         if (details.getWebsite() != null) user.setWebsite(details.getWebsite());
+        if (details.getInstagram() != null) user.setInstagram(details.getInstagram());
         if (details.getOpeningHours() != null) user.setOpeningHours(details.getOpeningHours());
         
         return userRepository.save(user);

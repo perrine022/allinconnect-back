@@ -71,6 +71,7 @@ public class User implements UserDetails {
     private String establishmentDescription;
     private String phoneNumber;
     private String website;
+    private String instagram;
     private String openingHours;
 
     public String getEstablishmentName() { return establishmentName; }
@@ -81,6 +82,8 @@ public class User implements UserDetails {
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
     public String getWebsite() { return website; }
     public void setWebsite(String website) { this.website = website; }
+    public String getInstagram() { return instagram; }
+    public void setInstagram(String instagram) { this.instagram = instagram; }
     public String getOpeningHours() { return openingHours; }
     public void setOpeningHours(String openingHours) { this.openingHours = openingHours; }
 
@@ -183,6 +186,7 @@ public class User implements UserDetails {
         private String establishmentDescription;
         private String phoneNumber;
         private String website;
+        private String instagram;
         private String openingHours;
         private Card card;
 
@@ -207,11 +211,19 @@ public class User implements UserDetails {
         public UserBuilder establishmentDescription(String establishmentDescription) { this.establishmentDescription = establishmentDescription; return this; }
         public UserBuilder phoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; return this; }
         public UserBuilder website(String website) { this.website = website; return this; }
+        public UserBuilder instagram(String instagram) { this.instagram = instagram; return this; }
         public UserBuilder openingHours(String openingHours) { this.openingHours = openingHours; return this; }
         public UserBuilder card(Card card) { this.card = card; return this; }
 
         public User build() {
-            return new User(id, email, password, firstName, lastName, address, city, latitude, longitude, birthDate, userType, hasConnectedBefore, subscriptionType, subscriptionPlan, subscriptionDate, profession, category, card);
+            User user = new User(id, email, password, firstName, lastName, address, city, latitude, longitude, birthDate, userType, hasConnectedBefore, subscriptionType, subscriptionPlan, subscriptionDate, profession, category, card);
+            user.setEstablishmentName(establishmentName);
+            user.setEstablishmentDescription(establishmentDescription);
+            user.setPhoneNumber(phoneNumber);
+            user.setWebsite(website);
+            user.setInstagram(instagram);
+            user.setOpeningHours(openingHours);
+            return user;
         }
     }
 

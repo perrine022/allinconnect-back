@@ -44,12 +44,13 @@ public class DataSeeder {
             log.info("Seeding database with complete profiles...");
 
             // --- Subscription Plans ---
-            SubscriptionPlan proMonthly = new SubscriptionPlan(null, "Pro Mensuel", "Plan professionnel mensuel", 29.99, PlanCategory.PROFESSIONAL, PlanDuration.MONTHLY);
-            SubscriptionPlan proAnnual = new SubscriptionPlan(null, "Pro Annuel", "Plan professionnel annuel", 299.99, PlanCategory.PROFESSIONAL, PlanDuration.ANNUAL);
-            SubscriptionPlan clientIndividual = new SubscriptionPlan(null, "Client Individuel", "Plan client individuel", 9.99, PlanCategory.INDIVIDUAL, PlanDuration.MONTHLY);
-            SubscriptionPlan clientFamily = new SubscriptionPlan(null, "Client Famille", "Plan client famille (jusqu'à 4)", 19.99, PlanCategory.FAMILY, PlanDuration.MONTHLY);
+            SubscriptionPlan proMonthly = new SubscriptionPlan(null, "Pro Mensuel", "Plan professionnel mensuel", 9.99, PlanCategory.PROFESSIONAL, PlanDuration.MONTHLY);
+            SubscriptionPlan proAnnual = new SubscriptionPlan(null, "Pro Annuel", "Plan professionnel annuel", 99.0, PlanCategory.PROFESSIONAL, PlanDuration.ANNUAL);
+            SubscriptionPlan clientIndividual = new SubscriptionPlan(null, "Client Individuel", "Plan client individuel", 2.99, PlanCategory.INDIVIDUAL, PlanDuration.MONTHLY);
+            SubscriptionPlan clientIndividualAnnual = new SubscriptionPlan(null, "Client Individuel Annuel", "Plan client individuel annuel", 29.99, PlanCategory.INDIVIDUAL, PlanDuration.ANNUAL);
+            SubscriptionPlan clientFamily = new SubscriptionPlan(null, "Client Famille", "Plan client famille (jusqu'à 4)", 9.99, PlanCategory.FAMILY, PlanDuration.MONTHLY);
             
-            subscriptionPlanRepository.saveAll(List.of(proMonthly, proAnnual, clientIndividual, clientFamily));
+            subscriptionPlanRepository.saveAll(List.of(proMonthly, proAnnual, clientIndividual, clientIndividualAnnual, clientFamily));
 
             // --- Users (Professionals) ---
             String[] professions = {"Coiffeur", "Boulanger", "Plombier", "Web Designer", "Consultant"};
@@ -77,7 +78,8 @@ public class DataSeeder {
                         .establishmentName("Etablissement " + professions[i])
                         .establishmentDescription("Description de l'établissement de " + professions[i])
                         .phoneNumber("010203040" + i)
-                        .website("https://pro" + (i+1) + ".com")
+                        .website("https://www.pro" + (i + 1) + ".com")
+                        .instagram("@pro" + (i + 1) + "_official")
                         .openingHours("Lun-Ven 9h-18h")
                         .hasConnectedBefore(true)
                         .build();
@@ -154,12 +156,12 @@ public class DataSeeder {
 
             // Add Payments for Jean
             Payment p1 = new Payment();
-            p1.setAmount(9.99);
+            p1.setAmount(2.99);
             p1.setPaymentDate(LocalDateTime.now().minusMonths(2));
             p1.setUser(mainClient);
             
             Payment p2 = new Payment();
-            p2.setAmount(9.99);
+            p2.setAmount(2.99);
             p2.setPaymentDate(LocalDateTime.now().minusMonths(1));
             p2.setUser(mainClient);
             
