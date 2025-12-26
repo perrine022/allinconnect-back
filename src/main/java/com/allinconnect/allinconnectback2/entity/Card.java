@@ -29,7 +29,7 @@ public class Card {
     @JsonIgnoreProperties({"card", "offers", "payments", "authorities", "password", "username"})
     private List<User> members = new ArrayList<>();
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "card_invited_emails", joinColumns = @JoinColumn(name = "card_id"))
     @Column(name = "email")
     private List<String> invitedEmails = new ArrayList<>();

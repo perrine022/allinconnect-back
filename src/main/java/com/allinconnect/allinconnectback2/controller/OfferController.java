@@ -36,7 +36,8 @@ public class OfferController {
             @RequestParam(required = false) ProfessionCategory category,
             @RequestParam(required = false) Long professionalId,
             @RequestParam(required = false) OfferType type) {
-        log.debug("Getting all offers with filters - city: {}, category: {}, professionalId: {}, type: {}", city, category, professionalId, type);
+        log.info("SEARCH REQUEST [Offer]: city={}, category={}, professionalId={}, type={}", 
+                city, category, professionalId, type);
         if (city != null || category != null || professionalId != null || type != null) {
             return ResponseEntity.ok(offerService.getOffersByFilters(city, category, professionalId, type));
         }

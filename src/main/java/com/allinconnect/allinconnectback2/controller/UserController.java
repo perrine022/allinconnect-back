@@ -55,7 +55,8 @@ public class UserController {
             @RequestParam(required = false) Double lat,
             @RequestParam(required = false) Double lon,
             @RequestParam(required = false) Double radius) {
-        log.debug("Searching professionals with city: {}, category: {}, name: {}, radius: {}", city, category, name, radius);
+        log.info("SEARCH REQUEST [Professional]: city={}, category={}, name={}, lat={}, lon={}, radius={}", 
+                city, category, name, lat, lon, radius);
         return ResponseEntity.ok(userService.searchProfessionals(city, category, name, lat, lon, radius));
     }
 

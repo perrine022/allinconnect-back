@@ -82,13 +82,14 @@ public class DataSeeder {
 
             List<User> pros = new ArrayList<>();
             for (int i = 0; i < professions.length; i++) {
+                String city = (i % 2 == 0) ? "Paris" : "Marseille"; // Alternance Paris / Marseille
                 User pro = User.builder()
                         .firstName("Pro" + (i + 1))
                         .lastName("NomPro" + (i + 1))
                         .email("pro" + (i + 1) + "@example.com")
                         .password(passwordEncoder.encode("password"))
-                        .address((i + 10) + " Rue")
-                        .city(i == 2 ? "Marseille" : "Paris")
+                        .address((i + 10) + " Rue de Rivoli")
+                        .city(city)
                         .latitude(lats[i])
                         .longitude(lons[i])
                         .birthDate(LocalDate.now().minusYears(30 + i))
@@ -116,9 +117,10 @@ public class DataSeeder {
                     offer.setTitle((isEvent ? "Evénement " : "Offre ") + professions[i] + " " + j);
                     offer.setDescription("Description détaillée pour " + (isEvent ? "l'événement " : "l'offre ") + j + " du professionnel " + professions[i]);
                     offer.setPrice(10.0 + random.nextInt(90));
-                    // Dates en juin 2026
-                    offer.setStartDate(LocalDateTime.of(2026, 6, 1, 9, 0).plusDays(j * 2L));
-                    offer.setEndDate(offer.getStartDate().plusMonths(1));
+                    // Dates commençant aujourd'hui pour être visibles immédiatement,
+                    // mais s'étendant bien jusqu'en juin 2026 et au-delà.
+                    offer.setStartDate(LocalDateTime.now().minusDays(1)); 
+                    offer.setEndDate(LocalDateTime.of(2026, 12, 31, 23, 59));
                     offer.setType(isEvent ? OfferType.EVENEMENT : OfferType.OFFRE);
                     offer.setFeatured(random.nextBoolean());
                     offer.setStatus(OfferStatus.ACTIVE);

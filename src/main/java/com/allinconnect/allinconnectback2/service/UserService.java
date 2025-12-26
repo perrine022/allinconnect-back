@@ -164,13 +164,25 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserLightResponse getUserLightInfo(User user) {
-        // We re-fetch the user to ensure we are in a persistence context
-        // and can access lazy collections
-        user = ensureUser(user);
-        final User finalUser = userRepository.findByEmail(user.getEmail())
+        if (user == null) {
+            log.error("getUserLightInfo: AuthenticationPrincipal is null");
+            throw new RuntimeException("Unauthorized");
+        }
+        
+        // Re-fetch user to ensure we are in session and have latest data
+        User finalUser = userRepository.findByEmail(user.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         log.debug("Service: Getting light info for user {}", finalUser.getEmail());
+        
+        // Explicitly initialize collections if needed, though EAGER on Card should handle invitedEmails
+        if (finalUser.getCard() != null) {
+            finalUser.getCard().getInvitedEmails().size();
+            finalUser.getCard().getMembers().size();
+        }
+        if (finalUser.getReferrals() != null) finalUser.getReferrals().size();
+        if (finalUser.getFavorites() != null) finalUser.getFavorites().size();
+        if (finalUser.getPayments() != null) finalUser.getPayments().size();
         
         return UserLightResponse.builder()
                 .firstName(finalUser.getFirstName())
