@@ -104,7 +104,7 @@ public class AuthenticationService {
             Card card = cardRepository.findByCardNumber(request.getCardNumber())
                     .orElseThrow(() -> new RuntimeException("Card not found with number: " + request.getCardNumber()));
             
-            if (card.getType() == CardType.FAMILY) {
+            if (card.getType() == CardType.CLIENT_FAMILY) {
                 if (card.getMembers().size() >= 4) {
                     throw new RuntimeException("Family card is full (max 4 members)");
                 }
@@ -123,7 +123,12 @@ public class AuthenticationService {
 
         // Si l'utilisateur a un plan et pas de carte (et n'est pas déjà rattaché à une carte famille), on lui crée sa propre carte
         if (user.getSubscriptionPlan() != null && user.getCard() == null) {
-            CardType cardType = (user.getSubscriptionPlan().getCategory() == PlanCategory.FAMILY) ? CardType.FAMILY : CardType.INDIVIDUAL;
+            CardType cardType;
+            if (user.getUserType() == com.allinconnect.allinconnectback2.model.UserType.PROFESSIONAL) {
+                cardType = CardType.PROFESSIONAL;
+            } else {
+                cardType = (user.getSubscriptionPlan().getCategory() == PlanCategory.FAMILY) ? CardType.CLIENT_FAMILY : CardType.CLIENT_INDIVIDUAL;
+            }
             Card newCard = new Card(generateCardNumber(), cardType, user);
             cardRepository.save(newCard);
             user.setCard(newCard);

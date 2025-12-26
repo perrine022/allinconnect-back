@@ -91,7 +91,7 @@ public class SubscriptionService {
 
     public void inviteMember(User owner, String email) {
         User finalOwner = ensureUser(owner);
-        if (finalOwner.getCard() == null || finalOwner.getCard().getType() != CardType.FAMILY) {
+        if (finalOwner.getCard() == null || finalOwner.getCard().getType() != CardType.CLIENT_FAMILY) {
             throw new RuntimeException("Only family card owners can invite members");
         }
         

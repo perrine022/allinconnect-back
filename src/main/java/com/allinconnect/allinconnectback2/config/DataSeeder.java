@@ -152,7 +152,7 @@ public class DataSeeder {
             userRepository.save(perrine);
 
             // Add Card to Perrine (Family)
-            Card perrineCard = new Card("FAM-777-888", CardType.FAMILY, perrine);
+            Card perrineCard = new Card("FAM-777-888", CardType.CLIENT_FAMILY, perrine);
             // On déclare les emails qui ont le droit de rejoindre cette carte famille
             perrineCard.setInvitedEmails(new ArrayList<>(List.of("filleul1@example.com", "filleul2@example.com", "filleul3@example.com")));
             cardRepository.save(perrineCard);
@@ -182,7 +182,7 @@ public class DataSeeder {
             userRepository.save(jean);
 
             // Add Card to Jean (Individual)
-            Card jeanCard = new Card("IND-123-456", CardType.INDIVIDUAL, jean);
+            Card jeanCard = new Card("IND-123-456", CardType.CLIENT_INDIVIDUAL, jean);
             cardRepository.save(jeanCard);
             jean.setCard(jeanCard);
             userRepository.save(jean);
@@ -205,7 +205,7 @@ public class DataSeeder {
             // --- Add Card to Professionals too ---
             for (int i = 0; i < pros.size(); i++) {
                 User pro = pros.get(i);
-                Card proCard = new Card("PRO-CARD-" + (i + 1), CardType.INDIVIDUAL, pro);
+                Card proCard = new Card("PRO-CARD-" + (i + 1), CardType.PROFESSIONAL, pro);
                 cardRepository.save(proCard);
                 pro.setCard(proCard);
                 // On met aussi une date de souscription pour les pros
