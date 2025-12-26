@@ -42,6 +42,12 @@ public class DataSeeder {
         return args -> {
             log.info("Forcing database re-seed: Clearing all tables...");
             
+            // 0. Break foreign key links using native SQL before clearing anything
+            cardRepository.unlinkCardsFromUsers();
+            cardRepository.fixCardTypeColumn();
+            cardRepository.truncateInvitedEmails();
+            cardRepository.truncateCards();
+
             // 1. Clear tables with foreign keys to Users or Cards
             deviceTokenRepository.deleteAll();
             ratingRepository.deleteAll();
@@ -50,16 +56,18 @@ public class DataSeeder {
             offerRepository.deleteAll();
             monthlyStatRepository.deleteAll();
             
-            // 2. Break circular relationships
+            // 2. Break other circular relationships (referral, favorites, members)
             userRepository.findAll().forEach(u -> {
                 u.setFavorites(new ArrayList<>());
                 u.setReferrer(null);
-                u.setCard(null); // IMPORTANT: Unlink card before deleting it
                 userRepository.save(u);
             });
             
+            // 2.5 Clear the user-card members join table if it exists
+            // This table is managed by @OneToMany mappedBy="card" in Card, so it's usually just card_id in users table.
+            // But we already set card_id to NULL in step 0.
+            
             // 3. Clear the rest
-            cardRepository.deleteAll();
             userRepository.deleteAll();
             subscriptionPlanRepository.deleteAll();
 
